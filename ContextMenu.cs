@@ -9,16 +9,16 @@ namespace FFLogsViewer
     {
         internal ContextMenu(FFLogsViewer plugin)
         {
-            this.Plugin = plugin;
+            Plugin = plugin;
 
-            this.Plugin.Common.Functions.ContextMenu.OpenContextMenu += OnOpenContextMenu;
+            Plugin.Common.Functions.ContextMenu.OpenContextMenu += OnOpenContextMenu;
         }
 
         private FFLogsViewer Plugin { get; }
 
         public void Dispose()
         {
-            this.Plugin.Common.Functions.ContextMenu.OpenContextMenu -= OnOpenContextMenu;
+            Plugin.Common.Functions.ContextMenu.OpenContextMenu -= OnOpenContextMenu;
         }
 
         private void OnOpenContextMenu(ContextMenuOpenArgs args)
@@ -26,25 +26,25 @@ namespace FFLogsViewer
             if (!IsMenuValid(args))
                 return;
 
-            if (this.Plugin.Configuration.ContextMenuStreamer)
+            if (Plugin.Configuration.ContextMenuStreamer)
             {
-                if (!this.Plugin.Ui.Visible)
+                if (!Plugin.Ui.Visible)
                     return;
 
-                this.SearchPlayerFromMenu(args);
+                SearchPlayerFromMenu(args);
             }
             else
             {
-                args.Items.Add(new NormalContextMenuItem(this.Plugin.Configuration.ContextMenuButtonName, Search));
+                args.Items.Add(new NormalContextMenuItem(Plugin.Configuration.ContextMenuButtonName, Search));
             }
         }
 
         private void Search(ContextMenuItemSelectedArgs args)
         {
             if (!IsMenuValid(args))
-                    return;
+                return;
 
-            this.SearchPlayerFromMenu(args);
+            SearchPlayerFromMenu(args);
         }
 
         private static bool IsMenuValid(BaseContextMenuArgs args)
@@ -80,10 +80,10 @@ namespace FFLogsViewer
 
             var playerName = $"{args.Text}@{world.Name}";
 
-            if (this.Plugin.Configuration.OpenInBrowser)
-                this.Plugin.OpenPlayerInBrowser(playerName);
+            if (Plugin.Configuration.OpenInBrowser)
+                Plugin.OpenPlayerInBrowser(playerName);
             else
-                this.Plugin.SearchPlayer(playerName);
+                Plugin.SearchPlayer(playerName);
         }
     }
 }

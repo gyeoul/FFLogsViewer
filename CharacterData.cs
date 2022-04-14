@@ -80,10 +80,9 @@ namespace FFLogsViewer
         internal bool IsEveryLogsReady { get; set; }
         internal bool IsDataLoading { get; set; }
 
-        internal bool IsCharacterReady(bool isChinese)
+        internal bool IsCharacterReady()
         {
             return this.FirstName != ""
-                   && (this.LastName != "" || isChinese)
                    && this.WorldName != "";
         }
 

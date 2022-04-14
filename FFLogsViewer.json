@@ -3,10 +3,10 @@
   "Name": "FF Logs Viewer",
   "Description": "在游戏里查看玩家在FFLogs上的数据的插件。",
   "Punchline": "View FF Logs ranking percentiles in-game.",
-  "RepoUrl": "https://github.com/Aireil/FFLogsViewer",
-  "IconUrl": "https://github.com/Aireil/FFLogsViewer/raw/master/res/icon.png",
-   "ImageUrls": [
-    "https://github.com/Aireil/FFLogsViewer/raw/master/res/banner.png"
+  "RepoUrl": "https://github.com/NukoOoOoOoO/FFLogsViewer",
+  "IconUrl": "https://github.com/NukoOoOoOoO/FFLogsViewer/raw/CN-Ver/res/icon.png",
+  "ImageUrls": [
+    "https://github.com/NukoOoOoOoO/FFLogsViewer/raw/CN-Ver/res/banner.png"
   ],
   "Tags": [
     "FFLogs",

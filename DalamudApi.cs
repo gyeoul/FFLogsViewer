@@ -15,14 +15,13 @@ using Dalamud.Game.Gui.PartyFinder;
 using Dalamud.Game.Gui.Toast;
 using Dalamud.Game.Libc;
 using Dalamud.Game.Network;
-using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 
 namespace FFLogsViewer
 {
-	internal class DalamudApi
-	{
+    internal class DalamudApi
+    {
         [PluginService] public static DalamudPluginInterface PluginInterface { get; private set; }
         [PluginService] public static BuddyList BuddyList { get; private set; }
         [PluginService] public static ChatGui ChatGui { get; private set; }
@@ -45,5 +44,5 @@ namespace FFLogsViewer
         [PluginService] public static SigScanner SigScanner { get; private set; }
         [PluginService] public static TargetManager TargetManager { get; private set; }
         [PluginService] public static ToastGui ToastGui { get; private set; }
-	}
+    }
 }

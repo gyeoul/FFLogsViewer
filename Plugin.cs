@@ -39,9 +39,7 @@ namespace FFLogsViewer
 
         public string Name => "FF Logs Viewer";
 
-        public bool IsChinese { get; private set; } = false;
-
-        public string FflogsHost { get; private set; } = "www.fflogs.com";
+        public string FflogsHost { get; private set; } = "cn.fflogs.com";
 
         public FFLogsViewer(DalamudPluginInterface pluginInterface, CommandManager commandManager)
         {
@@ -82,12 +80,6 @@ namespace FFLogsViewer
             }
 
             this._validWorlds = worlds.Select(world => world.Name.RawString).ToArray();
-
-            if (DalamudApi.DataManager.Language == (ClientLanguage)4)
-            {
-                this.IsChinese = true;
-                this.FflogsHost = "cn.fflogs.com";
-            }
 
             this._pi.UiBuilder.Draw += DrawUi;
             this._pi.UiBuilder.OpenConfigUi += ToggleSettingsUi;
@@ -271,7 +263,7 @@ namespace FFLogsViewer
             }
 
             // Matching player with Name@World for Chinese version
-            if (this.IsChinese && Regex.IsMatch( rawText, "@[^\x00-\x7F]{1,6}"))
+            if ( Regex.IsMatch( rawText, "@[^\x00-\x7F]{1,6}"))
             {
                 var splitText = rawText.Split("@");
                 var firstName = splitText[0];
@@ -283,38 +275,6 @@ namespace FFLogsViewer
 
                 return character;
             }
-
-            rawText = rawText.Replace("'s party for", " ");
-            rawText = rawText.Replace("You join", " ");
-            rawText = Regex.Replace(rawText, "\\[.*?\\]", " ");
-            rawText = Regex.Replace(rawText, "[^A-Za-z '-]", " ");
-            rawText = string.Concat(rawText.Select(x => char.IsUpper(x) ? " " + x : x.ToString())).TrimStart(' ');
-            rawText = Regex.Replace(rawText, @"\s+", " ");
-
-            var words = rawText.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries);
-
-            var index = -1;
-            for (var i = 0; index == -1 && i < this._validWorlds.Length; i++) index = Array.IndexOf(words, this._validWorlds[i]);
-
-            if (index - 2 >= 0)
-            {
-                character.FirstName = words[index - 2];
-                character.LastName = words[index - 1];
-                character.WorldName = words[index];
-            }
-            else if (words.Length >= 2)
-            {
-                character.FirstName = words[0];
-                character.LastName = words[1];
-                character.WorldName = DalamudApi.ClientState.LocalPlayer?.HomeWorld.GameData?.Name;
-            }
-            else
-            {
-                throw new ArgumentException("Invalid text.");
-            }
-
-            if (!char.IsUpper(character.FirstName[0]) || !char.IsUpper(character.LastName[0]))
-                throw new ArgumentException("Invalid text.");
 
             return character;
         }
@@ -333,7 +293,6 @@ namespace FFLogsViewer
                 PluginLog.LogError(e, "World not supported or invalid.");
                 return;
             }
-
 
             characterData.IsDataLoading = true;
             Task.Run(async () =>
@@ -419,31 +378,14 @@ namespace FFLogsViewer
 
         private string GetRegionName(string worldName)
         {
-            if (this.IsChinese)
-            {
-                return "CN";
-            }
-
-            var world = DalamudApi.DataManager.GetExcelSheet<World>()
-                ?.FirstOrDefault(
-                    x => x.Name.ToString().Equals(worldName, StringComparison.InvariantCultureIgnoreCase));
-
-            if (world == null)  throw new ArgumentException("Invalid world.");
-
-            return world?.DataCenter?.Value?.Region switch
-            {
-                1 => "JP",
-                2 => "NA",
-                3 => "EU",
-                4 => "OC",
-                _ => throw new ArgumentException("World not supported."),
-            };
+            return "CN";
         }
 
         private static void ParseLogs(CharacterData characterData, dynamic zone)
         {
             if (zone?.rankings == null || zone.rankings.Count == 0)
                 throw new InvalidOperationException("Field zone.rankings not found or empty.");
+
             foreach (var fight in zone.rankings)
             {
                 if (fight?.encounter == null) throw new InvalidOperationException("Field fight.encounter not found.");

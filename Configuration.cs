@@ -32,12 +32,12 @@ namespace FFLogsViewer
 
         internal void Initialize(DalamudPluginInterface pluginInterface)
         {
-            this.PluginInterface = pluginInterface;
+            PluginInterface = pluginInterface;
         }
 
         internal void Save()
         {
-            this.PluginInterface.SavePluginConfig(this);
+            PluginInterface.SavePluginConfig(this);
         }
     }
 }

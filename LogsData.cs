@@ -5,82 +5,74 @@ namespace FFLogsViewer
 {
     public partial class LogsData
     {
-        [JsonProperty("data")]
-        public Data Data { get; set; }
+        [JsonProperty("data")] public Data Data { get; set; }
     }
 
-    public partial class Data
+    public class Data
     {
-        [JsonProperty("worldData")]
-        public WorldData WorldData { get; set; }
+        [JsonProperty("worldData")] public WorldData WorldData { get; set; }
     }
 
-    public partial class WorldData
+    public class WorldData
     {
-        [JsonProperty("expansions")]
-        public List<Expansion> Expansions { get; set; }
+        [JsonProperty("expansions")] public List<Expansion> Expansions { get; set; }
     }
 
-    public partial class Expansion
+    public class Expansion
     {
-        [JsonProperty("name")]
-        public string Name { get; set; }
+        [JsonProperty("name")] public string Name { get; set; }
 
-        [JsonProperty("id")]
-        public int Id { get; set; }
+        [JsonProperty("id")] public int Id { get; set; }
 
-        [JsonProperty("zones")]
-        public List<Zone> Zones { get; set; }
+        [JsonProperty("zones")] public List<Zone> Zones { get; set; }
     }
 
-    public partial class Zone
+    public class Zone
     {
-        [JsonProperty("name")]
-        public string Name { get; set; }
+        [JsonProperty("name")] public string Name { get; set; }
 
-        [JsonProperty("id")]
-        public int Id { get; set; }
+        [JsonProperty("id")] public int Id { get; set; }
 
-        [JsonProperty("difficulties")]
-        public List<Difficulty> Difficulties { get; set; }
+        [JsonProperty("difficulties")] public List<Difficulty> Difficulties { get; set; }
 
-        [JsonProperty("encounters")]
-        public List<Encounter> Encounters { get; set; }
+        [JsonProperty("encounters")] public List<Encounter> Encounters { get; set; }
     }
 
-    public partial class Difficulty
+    public class Difficulty
     {
-        [JsonProperty("name")]
-        public string Name { get; set; }
+        [JsonProperty("name")] public string Name { get; set; }
 
-        [JsonProperty("id")]
-        public int Id { get; set; }
+        [JsonProperty("id")] public int Id { get; set; }
     }
 
-    public partial class Encounter
+    public class Encounter
     {
-        [JsonProperty("name")]
-        public string Name { get; set; }
+        [JsonProperty("name")] public string Name { get; set; }
 
-        [JsonProperty("id")]
-        public int Id { get; set; }
+        [JsonProperty("id")] public int Id { get; set; }
     }
 
     public partial class LogsData
     {
-        public static LogsData FromJson(string json) => JsonConvert.DeserializeObject<LogsData>(json);
+        public static LogsData FromJson(string json)
+        {
+            return JsonConvert.DeserializeObject<LogsData>(json);
+        }
     }
 
     public static class Serialize
     {
-        public static string ToJson(this LogsData self) => JsonConvert.SerializeObject(self);
+        public static string ToJson(this LogsData self)
+        {
+            return JsonConvert.SerializeObject(self);
+        }
     }
 
     internal static class Converter
     {
-        public static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
+        public static readonly JsonSerializerSettings Settings = new()
         {
-            MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
+            MetadataPropertyHandling = MetadataPropertyHandling.Ignore
         };
     }
 }

@@ -5,56 +5,44 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Dalamud.Logging;
-using Dalamud.Plugin;
 using Newtonsoft.Json;
 
 namespace FFLogsViewer
 {
     internal class FfLogsClient
     {
+        private readonly HttpClient _httpClient;
         private readonly FFLogsViewer _plugin;
         private Token _token;
-        private readonly HttpClient _httpClient;
-        internal bool IsTokenValid = false;
-
-        internal class Token
-        {
-            [JsonProperty("access_token")] internal string AccessToken { get; set; }
-
-            [JsonProperty("token_type")] internal string TokenType { get; set; }
-
-            [JsonProperty("expires_in")] internal int ExpiresIn { get; set; }
-
-            [JsonProperty("error")] internal string Error { get; set; }
-        }
+        internal bool IsTokenValid;
 
         internal FfLogsClient(FFLogsViewer plugin)
         {
-            this._plugin = plugin;
-            this._httpClient = new HttpClient();
+            _plugin = plugin;
+            _httpClient = new HttpClient();
 
             SetToken();
         }
 
         internal void SetToken()
         {
-            if (this._plugin.Configuration.ClientId == null ||
-                this._plugin.Configuration.ClientSecret == null) return;
+            if (_plugin.Configuration.ClientId == null || _plugin.Configuration.ClientSecret == null)
+                return;
 
-            this.IsTokenValid = false;
-            this._token = null;
+            IsTokenValid = false;
+            _token = null;
 
             Task.Run(async () =>
             {
-                this._token = await GetToken()
+                _token = await GetToken()
                     .ConfigureAwait(false);
 
-                if (this._token is {Error: null})
+                if (_token is { Error: null })
                 {
-                    this._httpClient.DefaultRequestHeaders.Authorization
-                        = new AuthenticationHeaderValue("Bearer", this._token.AccessToken);
+                    _httpClient.DefaultRequestHeaders.Authorization
+                        = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
 
-                    this.IsTokenValid = true;
+                    IsTokenValid = true;
                 }
             });
         }
@@ -68,20 +56,22 @@ namespace FFLogsViewer
 
             var form = new Dictionary<string, string>
             {
-                {"grant_type", grantType},
-                {"client_id", this._plugin.Configuration.ClientId},
-                {"client_secret", this._plugin.Configuration.ClientSecret},
+                { "grant_type", grantType },
+                { "client_id", _plugin.Configuration.ClientId },
+                { "client_secret", _plugin.Configuration.ClientSecret }
             };
 
             var tokenResponse = await client.PostAsync(baseAddress, new FormUrlEncodedContent(form));
             var jsonContent = await tokenResponse.Content.ReadAsStringAsync();
             var tok = JsonConvert.DeserializeObject<Token>(jsonContent);
+
             return tok;
         }
 
         internal async Task<dynamic> GetLogs(CharacterData characterData)
         {
-            if (this._token == null) return null;
+            if (_token == null)
+                return null;
 
             const string baseAddress = @"https://www.fflogs.com/api/v2/client";
 
@@ -100,25 +90,30 @@ namespace FFLogsViewer
                 "Ultimates: zoneRankings(zoneID: 43)" +
                 "}}}\"}";
 
+            PluginLog.Log(query);
+
             var content = new StringContent(query, Encoding.UTF8, "application/json");
 
-            var dataResponse = await this._httpClient.PostAsync(baseAddress, content);
+            var dataResponse = await _httpClient.PostAsync(baseAddress, content);
+
             try
             {
                 var jsonContent = await dataResponse.Content.ReadAsStringAsync();
                 dynamic json = JsonConvert.DeserializeObject(jsonContent);
+
                 return json;
             }
             catch (Exception e)
             {
                 PluginLog.LogError(e, "Error while fetching data.");
+
                 return null;
             }
         }
 
         internal async Task<LogsData> GetData()
         {
-            if (this._token == null) return null;
+            if (_token == null) return null;
 
             const string baseAddress = @"https://www.fflogs.com/api/v2/client";
 
@@ -126,17 +121,31 @@ namespace FFLogsViewer
 
             var content = new StringContent(query, Encoding.UTF8, "application/json");
 
-            var dataResponse = await this._httpClient.PostAsync(baseAddress, content);
+            var dataResponse = await _httpClient.PostAsync(baseAddress, content);
+
             try
             {
                 var jsonContent = await dataResponse.Content.ReadAsStringAsync();
+
                 return LogsData.FromJson(jsonContent);
             }
             catch (Exception e)
             {
                 PluginLog.LogError(e, "Error while fetching data.");
+
                 return null;
             }
+        }
+
+        internal class Token
+        {
+            [JsonProperty("access_token")] internal string AccessToken { get; set; }
+
+            [JsonProperty("token_type")] internal string TokenType { get; set; }
+
+            [JsonProperty("expires_in")] internal int ExpiresIn { get; set; }
+
+            [JsonProperty("error")] internal string Error { get; set; }
         }
     }
 }
