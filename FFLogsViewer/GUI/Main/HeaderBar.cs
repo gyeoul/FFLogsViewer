@@ -58,11 +58,11 @@ public class HeaderBar
         var calcInputSize = (contentRegionAvailWidth - (ImGui.GetStyle().ItemSpacing.X * 2) - buttonsWidth) / 3;
 
         ImGui.SetNextItemWidth(calcInputSize);
-        ImGui.InputTextWithHint("##FirstName", "First Name", ref Service.CharDataManager.DisplayedChar.FirstName, 15, ImGuiInputTextFlags.CharsNoBlank);
+        ImGui.InputTextWithHint("##FirstName", "名字", ref Service.CharDataManager.DisplayedChar.FirstName, 15, ImGuiInputTextFlags.CharsNoBlank);
 
         ImGui.SameLine();
         ImGui.SetNextItemWidth(calcInputSize);
-        ImGui.InputTextWithHint("##WorldName", "World", ref Service.CharDataManager.DisplayedChar.WorldName, 15, ImGuiInputTextFlags.CharsNoBlank);
+        ImGui.InputTextWithHint("##WorldName", "服务器", ref Service.CharDataManager.DisplayedChar.WorldName, 15, ImGuiInputTextFlags.CharsNoBlank);
 
         ImGui.SameLine();
         if (Util.DrawButtonIcon(FontAwesomeIcon.Search))
@@ -70,7 +70,7 @@ public class HeaderBar
             Service.CharDataManager.DisplayedChar.FetchData();
         }
 
-        Util.SetHoverTooltip("Search");
+        Util.SetHoverTooltip("搜索");
 
         ImGui.SameLine();
         if (Util.DrawButtonIcon(FontAwesomeIcon.Crosshairs))
@@ -78,7 +78,7 @@ public class HeaderBar
             Service.CharDataManager.DisplayedChar.FetchTargetChar();
         }
 
-        Util.SetHoverTooltip("Target");
+        Util.SetHoverTooltip("当前目标");
 
         ImGui.SameLine();
         if (Util.DrawButtonIcon(FontAwesomeIcon.Clipboard))
@@ -86,7 +86,7 @@ public class HeaderBar
             Service.CharDataManager.DisplayedChar.FetchClipboardCharacter();
         }
 
-        Util.SetHoverTooltip("Search clipboard");
+        Util.SetHoverTooltip("从剪贴板导入");
 
         ImGui.SameLine();
         if (Util.DrawButtonIcon(FontAwesomeIcon.UsersCog))
@@ -94,7 +94,7 @@ public class HeaderBar
             ImGui.OpenPopup("##PartyList");
         }
 
-        Util.SetHoverTooltip("Party members");
+        Util.SetHoverTooltip("小队成员");
 
         if (ImGui.BeginPopup("##PartyList", ImGuiWindowFlags.NoMove))
         {
@@ -125,7 +125,7 @@ public class HeaderBar
                         else
                         {
                             ImGui.Text("(?)");
-                            Util.SetHoverTooltip("An error occured with icons.\n" +
+                            Util.SetHoverTooltip("在获取图标时发生错误.\n" +
                                                  "Please create an issue on the GitHub with a screenshot of the red lines in /xllog.\n" +
                                                  "This is probably due to TexTools corrupting your game files.\n" +
                                                  "This shouldn't affect the party members functionality.");
@@ -154,7 +154,7 @@ public class HeaderBar
             }
             else
             {
-                ImGui.Text("No party member found");
+                ImGui.Text("找不到小队成员");
             }
 
             ImGui.EndPopup();
@@ -167,8 +167,8 @@ public class HeaderBar
         if (!Service.FfLogsClient.IsTokenValid)
         {
             var message = FFLogsClient.IsConfigSet()
-                              ? "API client not valid, click to open settings."
-                              : "API client not setup, click to open settings.";
+                              ? "API client 无效, 点我打开设置."
+                              : "API client 为空, 点我打开设置.";
             ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
             Util.CenterSelectable(message, ref this.isConfigClicked);
             ImGui.PopStyleColor();
@@ -180,21 +180,21 @@ public class HeaderBar
         {
             if (Service.CharDataManager.DisplayedChar.IsDataLoading)
             {
-                Util.CenterText("Loading...");
+                Util.CenterText("加载中...");
             }
             else
             {
                 if (Service.CharDataManager.DisplayedChar.IsDataReady)
                 {
                     Util.CenterSelectable(
-                        $"Viewing {Service.CharDataManager.DisplayedChar.LoadedFirstName} {Service.CharDataManager.DisplayedChar.LoadedLastName}@{Service.CharDataManager.DisplayedChar.LoadedWorldName}'s logs",
+                        $"正在查看 {Service.CharDataManager.DisplayedChar.LoadedFirstName}@{Service.CharDataManager.DisplayedChar.LoadedWorldName} 的logs",
                         ref this.isProfileLinkClicked);
 
-                    Util.SetHoverTooltip("Click to open on FF Logs");
+                    Util.SetHoverTooltip("点我到 FFlogs 上查看");
                 }
                 else
                 {
-                    Util.CenterText("Waiting...");
+                    Util.CenterText("等待玩家信息...");
                 }
             }
         }
@@ -205,7 +205,7 @@ public class HeaderBar
 
         if (Service.Configuration.Layout.Count == 0)
         {
-            Util.CenterSelectable("You have no layout set up. Click to open settings.", ref this.isConfigClicked);
+            Util.CenterSelectable("你还没设置布局呢. 点我打开菜单.", ref this.isConfigClicked);
         }
     }
 
@@ -227,8 +227,8 @@ public class HeaderBar
     {
         return new[]
         {
-            ImGui.CalcTextSize("First Name").X,
-            ImGui.CalcTextSize("World").X,
+            ImGui.CalcTextSize("名字").X,
+            ImGui.CalcTextSize("服务器").X,
             ImGui.CalcTextSize(Service.CharDataManager.DisplayedChar.FirstName).X,
             ImGui.CalcTextSize(Service.CharDataManager.DisplayedChar.WorldName).X,
         }.Max() + (ImGui.GetStyle().FramePadding.X * 2);

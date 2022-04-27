@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
 using Dalamud.Logging;
@@ -22,10 +22,11 @@ public class GameDataManager
         new Metric { Name = "Tank Combined aDPS", InternalName = "tankcombineddps" },
         new Metric { Name = "Tank Combined nDPS", InternalName = "tankcombinedndps" },
     };
-    public bool IsDataReady;
-    public bool IsDataLoading;
-    public bool HasFailed;
+
     public GameData? GameData;
+    public bool HasFailed;
+    public bool IsDataLoading;
+    public bool IsDataReady;
     public List<Job> Jobs;
 
     public GameDataManager()
@@ -44,29 +45,25 @@ public class GameDataManager
 
         this.IsDataReady = false;
         this.IsDataLoading = true;
-        Task.Run(async () =>
-        {
-            await Service.FfLogsClient.FetchGameData().ConfigureAwait(false);
-        }).ContinueWith(t =>
+        Task.Run(async () => { await Service.FfLogsClient.FetchGameData().ConfigureAwait(false); }).ContinueWith(t =>
         {
             if (!this.IsDataReady)
-            {
                 this.HasFailed = true;
-            }
 
             this.IsDataLoading = false;
+
             if (!t.IsFaulted) return;
             if (t.Exception == null) return;
+
             foreach (var e in t.Exception.Flatten().InnerExceptions)
-            {
                 PluginLog.Error(e, "Networking error.");
-            }
         });
     }
 
     public void SetDataFromJson(string jsonContent)
     {
         var gameData = GameData.FromJson(jsonContent);
+
         if (gameData == null)
         {
             PluginLog.Error("gameData was null while fetching game data");
@@ -109,6 +106,29 @@ public class GameDataManager
             new() { Name = "Summoner", Color = new Vector4(45, 155, 120, 255) / 255 },
             new() { Name = "Warrior", Color = new Vector4(207, 38, 33, 255) / 255 },
             new() { Name = "White Mage", Color = new Vector4(255, 240, 220, 255) / 255 },
+
+            /*
+            new() { Name = "占星术士", Color = new Vector4(255, 231, 74, 255) / 255 }, // Astrologian
+            new() { Name = "吟游诗人", Color = new Vector4(145, 150, 186, 255) / 255 }, // Bard
+            new() { Name = "黑魔法师", Color = new Vector4(165, 121, 214, 255) / 255 }, // Black mage
+            new() { Name = "舞者", Color = new Vector4(226, 176, 175, 255) / 255 }, // Dancer
+            new() { Name = "暗黑骑士", Color = new Vector4(209, 38, 204, 255) / 255 }, // Dark Knight
+            new() { Name = "龙骑士", Color = new Vector4(65, 100, 205, 255) / 255 }, // Dragoon
+            new() { Name = "绝枪战士", Color = new Vector4(121, 109, 48, 255) / 255 }, // Gunbreaker
+            new() { Name = "机工士", Color = new Vector4(110, 225, 214, 255) / 255 }, // Machinist
+            new() { Name = "武僧", Color = new Vector4(214, 156, 0, 255) / 255 }, // Monk
+            new() { Name = "忍者", Color = new Vector4(175, 25, 100, 255) / 255 }, // Ninja
+            new() { Name = "骑士", Color = new Vector4(168, 210, 230, 255) / 255 }, // Paladin
+            new() { Name = "赤魔法师", Color = new Vector4(232, 123, 123, 255) / 255 }, // Red Mage
+            new() { Name = "钐镰客", Color = new Vector4(150, 90, 144, 255) / 255 }, // Reaper
+            new() { Name = "贤者", Color = new Vector4(128, 160, 240, 255) / 255 }, // Sage
+            new() { Name = "武士", Color = new Vector4(228, 109, 4, 255) / 255 }, // Samurai
+            new() { Name = "学者", Color = new Vector4(134, 87, 255, 255) / 255 }, // Scholar
+            new() { Name = "召唤师", Color = new Vector4(45, 155, 120, 255) / 255 }, // Summoner
+            new() { Name = "战士", Color = new Vector4(207, 38, 33, 255) / 255 }, // Warrior
+            new() { Name = "白魔法师", Color = new Vector4(255, 240, 220, 255) / 255 }, // White Mage
+            */
         };
     }
+    
 }

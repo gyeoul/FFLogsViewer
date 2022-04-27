@@ -22,7 +22,6 @@ public class CharData
     public string WorldName = string.Empty;
     public string RegionName = string.Empty;
     public string LoadedFirstName = string.Empty;
-    public string LoadedLastName = string.Empty;
     public string LoadedWorldName = string.Empty;
     public bool IsDataLoading;
     public bool IsDataReady;
@@ -39,7 +38,7 @@ public class CharData
     {
         if (playerCharacter.HomeWorld.GameData?.Name == null)
         {
-            Service.MainWindow.SetErrorMessage("An error occured, please try again");
+            Service.MainWindow.SetErrorMessage("无法获取玩家服务器,请稍后再试");
             PluginLog.Error("SetInfo character world was null");
             return false;
         }
@@ -66,7 +65,7 @@ public class CharData
         }
         else
         {
-            Service.MainWindow.SetErrorMessage("Not a valid target");
+            Service.MainWindow.SetErrorMessage("目标不存在");
         }
     }
 
@@ -81,14 +80,14 @@ public class CharData
 
         if (!this.IsInfoSet())
         {
-            Service.MainWindow.SetErrorMessage("Please fill first name, last name, and world");
+            Service.MainWindow.SetErrorMessage("请填入名字以及服务器信息.");
             return;
         }
 
         var regionName = CharDataManager.GetRegionName(this.WorldName);
         if (regionName == null)
         {
-            Service.MainWindow.SetErrorMessage("World not supported or invalid");
+            Service.MainWindow.SetErrorMessage("服务器名无效");
             return;
         }
 
@@ -102,7 +101,7 @@ public class CharData
             if (rawData == null)
             {
                 this.IsDataLoading = false;
-                Service.MainWindow.SetErrorMessage("Could not reach FF Logs servers");
+                Service.MainWindow.SetErrorMessage("无法连接到 FF Logs 服务器");
                 PluginLog.Error("rawData is null");
                 return;
             }
@@ -112,7 +111,7 @@ public class CharData
                 if (rawData.error != null && rawData.error == "Unauthenticated.")
                 {
                     this.IsDataLoading = false;
-                    Service.MainWindow.SetErrorMessage("API Client not valid, check config");
+                    Service.MainWindow.SetErrorMessage("API Client 无效,请检查配置文件");
                     PluginLog.Log($"Unauthenticated: {rawData}");
                     return;
                 }
@@ -120,13 +119,13 @@ public class CharData
                 if (rawData.errors != null)
                 {
                     this.IsDataLoading = false;
-                    Service.MainWindow.SetErrorMessage("Malformed GraphQL query.");
+                    Service.MainWindow.SetErrorMessage("GraphQL 请求不正确.");
                     PluginLog.Log($"Malformed GraphQL query: {rawData}");
                     return;
                 }
 
                 this.IsDataLoading = false;
-                Service.MainWindow.SetErrorMessage("Character not found on FF Logs");
+                Service.MainWindow.SetErrorMessage("无法在 FF Logs 上找到该玩家的信息");
                 return;
             }
 
@@ -136,7 +135,7 @@ public class CharData
             {
                 this.IsDataLoading = false;
                 Service.MainWindow.SetErrorMessage(
-                    $"{this.FirstName}@{this.WorldName}'s logs are hidden");
+                    $"{this.FirstName}@{this.WorldName}的 logs 被隐藏了");
                 return;
             }
 
@@ -159,7 +158,7 @@ public class CharData
             this.IsDataLoading = false;
             if (!t.IsFaulted) return;
             if (t.Exception == null) return;
-            Service.MainWindow.SetErrorMessage("Networking error, please try again");
+            Service.MainWindow.SetErrorMessage("网络错误,请稍后再试");
             foreach (var e in t.Exception.Flatten().InnerExceptions)
             {
                 PluginLog.Error(e, "Networking error");

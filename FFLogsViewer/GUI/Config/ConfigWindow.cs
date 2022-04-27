@@ -1,4 +1,4 @@
-﻿using Dalamud.Interface.Windowing;
+using Dalamud.Interface.Windowing;
 using ImGuiNET;
 
 namespace FFLogsViewer.GUI.Config;
@@ -19,25 +19,25 @@ public class ConfigWindow : Window
     {
         ImGui.BeginTabBar("ConfigTabs");
 
-        if (ImGui.BeginTabItem("Misc"))
+        if (ImGui.BeginTabItem("其他"))
         {
             MiscTab.Draw();
             ImGui.EndTabItem();
         }
 
-        if (ImGui.BeginTabItem("Layout"))
+        if (ImGui.BeginTabItem("布局"))
         {
             this.LayoutTab.Draw();
             ImGui.EndTabItem();
         }
 
-        if (ImGui.BeginTabItem("Stats"))
+        if (ImGui.BeginTabItem("数据"))
         {
             StatsTab.Draw();
             ImGui.EndTabItem();
         }
 
-        if (ImGui.BeginTabItem("Style"))
+        if (ImGui.BeginTabItem("样式"))
         {
             StyleTab.Draw();
             ImGui.EndTabItem();

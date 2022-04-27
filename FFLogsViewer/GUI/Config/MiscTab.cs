@@ -1,4 +1,4 @@
-﻿using Dalamud.Interface.Colors;
+using Dalamud.Interface.Colors;
 using ImGuiNET;
 
 namespace FFLogsViewer.GUI.Config;

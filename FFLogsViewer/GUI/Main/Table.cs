@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Interface.Colors;
@@ -86,7 +86,7 @@ public class Table
                     if (encounter is { IsLockedIn: false })
                     {
                         ImGui.PopStyleColor();
-                        Util.SetHoverTooltip("Not locked in");
+                        Util.SetHoverTooltip("未锁定");
                     }
 
                     foreach (var stat in enabledStats)

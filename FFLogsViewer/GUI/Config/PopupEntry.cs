@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
@@ -262,7 +262,7 @@ public class PopupEntry
 
     private void DrawEntryHeader(LayoutEntry currLayoutEntry)
     {
-        if (ImGui.Button(this.mode == Mode.Adding ? "Add" : "Edit"))
+        if (ImGui.Button(this.mode == Mode.Adding ? "添加" : "编辑"))
         {
             var newLayoutEntry = currLayoutEntry.CloneHeader();
 
