@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Numerics;
+using Dalamud.Interface.Colors;
 using FFLogsViewer.Model;
 using ImGuiNET;
 
@@ -16,9 +17,16 @@ public class Table
                     enabledStats.Count + 1,
                     Service.Configuration.Style.MainTableFlags))
         {
-            foreach (var entry in Service.Configuration.Layout)
+            for (var i = 0; i < Service.Configuration.Layout.Count; i++)
             {
+                if (i != 0)
+                {
+                    ImGui.TableNextRow();
+                }
+
                 ImGui.TableNextColumn();
+
+                var entry = Service.Configuration.Layout[i];
 
                 if (entry.Type == LayoutEntryType.Header)
                 {
@@ -29,7 +37,7 @@ public class Table
                         separatorCursorY = ImGui.GetCursorPosY();
                     }
 
-                    ImGui.Text(entry.Alias);
+                    ImGui.TextUnformatted(entry.Alias);
 
                     foreach (var stat in enabledStats)
                     {
@@ -62,11 +70,25 @@ public class Table
                 }
                 else if (entry.Type == LayoutEntryType.Encounter)
                 {
-                    ImGui.Text(entry.Alias != string.Empty ? entry.Alias : entry.Encounter);
-
                     var encounter =
                         Service.CharDataManager.DisplayedChar.Encounters.FirstOrDefault(
                             enc => enc.Id == entry.EncounterId && enc.Difficulty == entry.DifficultyId);
+
+                    var encounterName = entry.Alias != string.Empty ? entry.Alias : entry.Encounter;
+                    if (encounter is { IsLockedIn: false })
+                    {
+                        ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudGrey);
+                        encounterName += " (NL)";
+                    }
+
+                    ImGui.Text(encounterName);
+
+                    if (encounter is { IsLockedIn: false })
+                    {
+                        ImGui.PopStyleColor();
+                        Util.SetHoverTooltip("Not locked in");
+                    }
+
                     foreach (var stat in enabledStats)
                     {
                         ImGui.TableNextColumn();
@@ -75,11 +97,11 @@ public class Table
                         switch (stat.Type)
                         {
                             case StatType.Best:
-                                text = encounter?.Best?.ToString();
+                                text = Util.GetFormattedLog(encounter?.Best, Service.Configuration.NbOfDecimalDigits);
                                 color = Util.GetLogColor(encounter?.Best);
                                 break;
                             case StatType.Median:
-                                text = encounter?.Median?.ToString();
+                                text = Util.GetFormattedLog(encounter?.Median, Service.Configuration.NbOfDecimalDigits);
                                 color = Util.GetLogColor(encounter?.Median);
                                 break;
                             case StatType.Kills:
@@ -103,6 +125,17 @@ public class Table
                                 text = encounter?.BestJob?.Name;
                                 color = encounter?.BestJob?.Color;
                                 break;
+                            case StatType.AllStarsPoints:
+                                text = encounter?.AllStarsPoints?.ToString();
+                                break;
+                            case StatType.AllStarsRank:
+                                text = encounter?.AllStarsRank?.ToString();
+                                color = Util.GetLogColor(encounter?.AllStarsRankPercent);
+                                break;
+                            case StatType.AllStarsRankPercent:
+                                text = Util.GetFormattedLog(encounter?.AllStarsRankPercent, Service.Configuration.NbOfDecimalDigits);
+                                color = Util.GetLogColor(encounter?.AllStarsRankPercent);
+                                break;
                             default:
                                 text = "?";
                                 break;
@@ -114,8 +147,6 @@ public class Table
                         Util.CenterTextColored(color.Value, text);
                     }
                 }
-
-                ImGui.TableNextRow();
             }
 
             ImGui.EndTable();

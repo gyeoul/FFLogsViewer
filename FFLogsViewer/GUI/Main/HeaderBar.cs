@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
-using FFLogsViewer.Manager;
 using ImGuiNET;
 
 namespace FFLogsViewer.GUI.Main;
@@ -13,9 +13,9 @@ public class HeaderBar
     public string ErrorMessage = string.Empty;
     public uint ResetSizeCount;
 
+    private readonly Stopwatch partyListStopwatch = new();
     private bool isProfileLinkClicked;
     private bool isConfigClicked;
-    private List<string> partyList = new();
 
     public void Draw()
     {
@@ -95,7 +95,6 @@ public class HeaderBar
         ImGui.SameLine();
         if (Util.DrawButtonIcon(FontAwesomeIcon.UsersCog))
         {
-            this.partyList = CharDataManager.GetPartyMembers();
             ImGui.OpenPopup("##PartyList");
         }
 
@@ -103,20 +102,63 @@ public class HeaderBar
 
         if (ImGui.BeginPopup("##PartyList", ImGuiWindowFlags.NoMove))
         {
-            if (this.partyList.Count != 0)
+            Util.UpdateDelayed(this.partyListStopwatch, TimeSpan.FromSeconds(1), Service.PartyListManager.UpdatePartyList);
+
+            var partyList = Service.PartyListManager.PartyList;
+            if (partyList.Count != 0)
             {
-                for (var i = 0; i < this.partyList.Count; i++)
+                if (ImGui.BeginTable("##PartyListTable", 3, ImGuiTableFlags.RowBg))
                 {
-                    var partyMember = this.partyList[i];
-                    if (ImGui.Selectable($"{partyMember}##{i}"))
+                    for (var i = 0; i < partyList.Count; i++)
                     {
-                        Service.CharDataManager.DisplayedChar.FetchTextCharacter(partyMember);
+                        if (i != 0)
+                        {
+                            ImGui.TableNextRow();
+                        }
+
+                        ImGui.TableNextColumn();
+
+                        var partyMember = partyList[i];
+
+                        var icon = Service.PartyListManager.GetJobIcon(partyMember.JobId);
+                        var iconSize = 25 * ImGuiHelpers.GlobalScale;
+                        if (icon != null)
+                        {
+                            ImGui.Image(icon.ImGuiHandle, new Vector2(iconSize));
+                        }
+                        else
+                        {
+                            ImGui.Text("(?)");
+                            Util.SetHoverTooltip("An error occured with icons.\n" +
+                                                 "Please create an issue on the GitHub with a screenshot of the red lines in /xllog.\n" +
+                                                 "This is probably due to TexTools corrupting your game files.\n" +
+                                                 "This shouldn't affect the party members functionality.");
+                        }
+
+                        ImGui.SameLine();
+                        if (ImGui.Selectable($"##PartyListSel{i}", false, ImGuiSelectableFlags.SpanAllColumns, new Vector2(0, iconSize)))
+                        {
+                            Service.CharDataManager.DisplayedChar.FetchTextCharacter($"{partyMember.Name}@{partyMember.World}");
+                        }
+
+                        ImGui.TableNextColumn();
+
+                        var middleCursorPosY = ImGui.GetCursorPosY() + (iconSize / 2) - (ImGui.CalcTextSize("R").Y / 2);
+                        ImGui.SetCursorPosY(middleCursorPosY);
+                        ImGui.Text(partyMember.Name);
+
+                        ImGui.TableNextColumn();
+
+                        ImGui.SetCursorPosY(middleCursorPosY);
+                        ImGui.Text(partyMember.World);
                     }
+
+                    ImGui.EndTable();
                 }
             }
             else
             {
-                ImGui.Text("Not in a party");
+                ImGui.Text("No party member found");
             }
 
             ImGui.EndPopup();

@@ -51,7 +51,7 @@ public class ContextMenu : IDisposable
             }
             else
             {
-                args.AddCustomItem(Service.Configuration.ContextMenuButtonName, Search);
+                args.AddCustomItem(Service.Configuration.ContextMenuButtonName ?? "Search FF Logs", Search);
             }
         }
 
@@ -71,7 +71,10 @@ public class ContextMenu : IDisposable
                 case "LinkShell":
                 case "CrossWorldLinkshell":
                 case "ContentMemberList": // Eureka/Bozja/...
-                    return args.GameObjectContext?.Name != null && args.GameObjectContext?.WorldId != 0 && args.GameObjectContext?.WorldId != 65535;
+                    return args.GameObjectContext?.Name != null
+                           && args.GameObjectContext?.WorldId != null
+                           && args.GameObjectContext.WorldId != 0
+                           && args.GameObjectContext.WorldId != 65535;
 
                 default:
                     return false;

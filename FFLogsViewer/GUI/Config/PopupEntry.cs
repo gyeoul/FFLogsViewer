@@ -59,7 +59,7 @@ public class PopupEntry
                 currLayoutEntry.Type = LayoutEntryType.Header;
             }
 
-            Util.DrawHelp("A header displays the metric for each column.");
+            Util.DrawHelp("A header displays the stat for each column.");
 
             var alias = currLayoutEntry.Alias;
             if (ImGui.InputText("Alias", ref alias, 400))
@@ -67,7 +67,7 @@ public class PopupEntry
                 currLayoutEntry.Alias = alias;
             }
 
-            Util.DrawHelp("Optional, will overwrite the encounter name from FFLogs");
+            Util.DrawHelp("Optional, will overwrite the encounter name from FF Logs");
 
             if (!Service.GameDataManager.IsDataReady && !Service.GameDataManager.IsDataLoading && !Service.GameDataManager.HasFailed)
             {

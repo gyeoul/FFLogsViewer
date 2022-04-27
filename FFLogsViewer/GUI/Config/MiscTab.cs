@@ -13,6 +13,18 @@ public class MiscTab
         }
 
         var hasChanged = false;
+        ImGui.AlignTextToFramePadding();
+        ImGui.Text("Number of decimal digits for logs: ");
+        for (var i = 0; i <= 2; i++)
+        {
+            ImGui.SameLine();
+            if (ImGui.RadioButton(i + "##NbOfDecimalDigits", Service.Configuration.NbOfDecimalDigits == i))
+            {
+                Service.Configuration.NbOfDecimalDigits = i;
+                hasChanged = true;
+            }
+        }
+
         var hideInCombat = Service.Configuration.HideInCombat;
         if (ImGui.Checkbox(@"Hide in combat##HideInCombat", ref hideInCombat))
         {
@@ -23,7 +35,7 @@ public class MiscTab
         ImGui.TextColored(ImGuiColors.DalamudRed, "Context menu button is disabled in 6.1, waiting for a fix.");
 
         var contextMenu = Service.Configuration.ContextMenu;
-        if (ImGui.Checkbox("Search button in context menus##ContextMenu", ref contextMenu))
+        if (ImGui.Checkbox("Enable context menu##ContextMenu", ref contextMenu))
         {
             if (contextMenu)
             {
@@ -42,6 +54,7 @@ public class MiscTab
 
         if (Service.Configuration.ContextMenu)
         {
+            ImGui.Indent();
             if (!Service.Configuration.ContextMenuStreamer)
             {
                 var contextMenuButtonName = Service.Configuration.ContextMenuButtonName;
@@ -59,7 +72,7 @@ public class MiscTab
                 }
 
                 Util.SetHoverTooltip("The button in context menus opens" +
-                                     "\nFFLogs in your default browser instead" +
+                                     "\nFF Logs in your default browser instead" +
                                      "\nof opening the plugin window.");
             }
 
@@ -72,10 +85,12 @@ public class MiscTab
                     hasChanged = true;
                 }
 
-                Util.SetHoverTooltip("When the FF Logs Viewer window is open, opening a context menu" +
+                Util.SetHoverTooltip("When the main window is open, opening a context menu" +
                                      "\nwill automatically search for the selected player." +
                                      "\nThis mode does not add a button to the context menu.");
             }
+
+            ImGui.Unindent();
         }
 
         ImGui.Text("API client:");
