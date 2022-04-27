@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -108,7 +108,7 @@ public class FFLogsClient
 
         var query = new StringBuilder();
         query.Append(
-            $"{{\"query\":\"query {{characterData{{character(name: \\\"{charData.FirstName} {charData.LastName}\\\"serverSlug: \\\"{charData.WorldName}\\\"serverRegion: \\\"{charData.RegionName}\\\"){{");
+            $"{{\"query\":\"query {{characterData{{character(name: \\\"{charData.FirstName}\\\"serverSlug: \\\"{charData.WorldName}\\\"serverRegion: \\\"{charData.RegionName}\\\"){{");
         query.Append("hidden ");
 
         var metric = charData.OverriddenMetric ?? Service.Configuration.Metric;
@@ -171,11 +171,11 @@ public class FFLogsClient
                 var isInInfo = false;
                 foreach (var (id, difficulty) in info)
                 {
-                    if (id == entry.ZoneId && difficulty == entry.DifficultyId)
-                    {
-                        isInInfo = true;
-                        break;
-                    }
+                    if (id != entry.ZoneId || difficulty != entry.DifficultyId)
+                        continue;
+
+                    isInInfo = true;
+                    break;
                 }
 
                 if (!isInInfo)

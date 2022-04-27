@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using Dalamud.Logging;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
@@ -35,14 +35,7 @@ public class CharDataManager
             return null;
         }
 
-        return world.DataCenter?.Value?.Region switch
-        {
-            1 => "JP",
-            2 => "NA",
-            3 => "EU",
-            4 => "OC",
-            _ => null,
-        };
+        return "CN";
     }
 
     public static unsafe string? FindPlaceholder(string text)

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
@@ -59,10 +59,6 @@ public class HeaderBar
 
         ImGui.SetNextItemWidth(calcInputSize);
         ImGui.InputTextWithHint("##FirstName", "First Name", ref Service.CharDataManager.DisplayedChar.FirstName, 15, ImGuiInputTextFlags.CharsNoBlank);
-
-        ImGui.SameLine();
-        ImGui.SetNextItemWidth(calcInputSize);
-        ImGui.InputTextWithHint("##LastName", "Last Name", ref Service.CharDataManager.DisplayedChar.LastName, 15, ImGuiInputTextFlags.CharsNoBlank);
 
         ImGui.SameLine();
         ImGui.SetNextItemWidth(calcInputSize);
@@ -232,10 +228,8 @@ public class HeaderBar
         return new[]
         {
             ImGui.CalcTextSize("First Name").X,
-            ImGui.CalcTextSize("Last Name").X,
             ImGui.CalcTextSize("World").X,
             ImGui.CalcTextSize(Service.CharDataManager.DisplayedChar.FirstName).X,
-            ImGui.CalcTextSize(Service.CharDataManager.DisplayedChar.LastName).X,
             ImGui.CalcTextSize(Service.CharDataManager.DisplayedChar.WorldName).X,
         }.Max() + (ImGui.GetStyle().FramePadding.X * 2);
     }

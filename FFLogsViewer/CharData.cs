@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -19,7 +19,6 @@ public class CharData
     public Metric? OverriddenMetric;
     public Metric? LoadedMetric;
     public string FirstName = string.Empty;
-    public string LastName = string.Empty;
     public string WorldName = string.Empty;
     public string RegionName = string.Empty;
     public string LoadedFirstName = string.Empty;
@@ -30,10 +29,9 @@ public class CharData
 
     public List<Encounter> Encounters = new();
 
-    public void SetInfo(string firstName, string lastName, string worldName)
+    public void SetInfo(string firstName, string worldName)
     {
         this.FirstName = firstName;
-        this.LastName = lastName;
         this.WorldName = worldName;
     }
 
@@ -46,15 +44,14 @@ public class CharData
             return false;
         }
 
-        this.FirstName = playerCharacter.Name.TextValue.Split(' ')[0];
-        this.LastName = playerCharacter.Name.TextValue.Split(' ')[1];
+        this.FirstName = playerCharacter.Name.TextValue;
         this.WorldName = playerCharacter.HomeWorld.GameData.Name.ToString();
         return true;
     }
 
     public bool IsInfoSet()
     {
-        return this.FirstName != string.Empty && this.LastName != string.Empty && this.WorldName != string.Empty;
+        return this.FirstName != string.Empty && this.WorldName != string.Empty;
     }
 
     public void FetchTargetChar()
@@ -139,7 +136,7 @@ public class CharData
             {
                 this.IsDataLoading = false;
                 Service.MainWindow.SetErrorMessage(
-                    $"{this.FirstName} {this.LastName}@{this.WorldName}'s logs are hidden");
+                    $"{this.FirstName}@{this.WorldName}'s logs are hidden");
                 return;
             }
 
@@ -156,7 +153,6 @@ public class CharData
 
             this.IsDataReady = true;
             this.LoadedFirstName = this.FirstName;
-            this.LoadedLastName = this.LastName;
             this.LoadedWorldName = this.WorldName;
         }).ContinueWith(t =>
         {
@@ -173,55 +169,26 @@ public class CharData
 
     public bool ParseTextForChar(string rawText)
     {
-        var character = new CharData();
         var placeholder = CharDataManager.FindPlaceholder(rawText);
         if (placeholder != null)
         {
             rawText = placeholder;
         }
 
-        rawText = rawText.Replace("'s party for", " ");
-        rawText = rawText.Replace("You join", " ");
-        rawText = Regex.Replace(rawText, "\\[.*?\\]", " ");
-        rawText = Regex.Replace(rawText, "[^A-Za-z '-]", " ");
-        rawText = string.Concat(rawText.Select(x => char.IsUpper(x) ? " " + x : x.ToString())).TrimStart(' ');
-        rawText = Regex.Replace(rawText, @"\s+", " ");
+        if (!Regex.IsMatch(rawText, "@[^\x00-\x7F]{1,6}"))
+            return false;
 
-        var words = rawText.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-
-        var index = -1;
-        for (var i = 0; index == -1 && i < Service.CharDataManager.ValidWorlds.Length; i++) index = Array.IndexOf(words, Service.CharDataManager.ValidWorlds[i]);
-
-        if (index - 2 >= 0)
-        {
-            character.FirstName = words[index - 2];
-            character.LastName = words[index - 1];
-            character.WorldName = words[index];
-        }
-        else if (words.Length >= 2)
-        {
-            if (Service.ClientState.LocalPlayer?.HomeWorld.GameData?.Name == null)
-            {
-                return false;
-            }
-
-            character.FirstName = words[0];
-            character.LastName = words[1];
-            character.WorldName = Service.ClientState.LocalPlayer.HomeWorld.GameData.Name.ToString();
-        }
-        else
+        if (Service.ClientState.LocalPlayer?.HomeWorld.GameData?.Name == null)
         {
             return false;
         }
 
-        if (!char.IsUpper(character.FirstName[0]) || !char.IsUpper(character.LastName[0]))
-        {
-            return false;
-        }
+        var splitedText = rawText.Split("@");
+        var firstName = splitedText[0];
+        var serverName = splitedText[1];
 
-        this.FirstName = character.FirstName;
-        this.LastName = character.LastName;
-        this.WorldName = character.WorldName;
+        this.FirstName = firstName[Math.Max(0, firstName.Length - 6)..]; // Maximum name length for Chinese region is 6, same goes for Korean I think
+        this.WorldName = serverName;
 
         return true;
     }
