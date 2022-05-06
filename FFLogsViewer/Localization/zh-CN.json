@@ -107,8 +107,8 @@
     "Style_BordersCustomization_BordersOuter": "BordersOuter",
     "Style_BordersCustomization_BordersInnerH": "BordersInnerH",
     "Style_BordersCustomization_BordersInnerV": "BordersInnerV",
-    "Style_BordersCustomization_BordersOuterH": "BordersOutterH",
-    "Style_BordersCustomization_BordersOuterV": "BordersOutterV",
+    "Style_BordersCustomization_BordersOuterH": "BordersOuterH",
+    "Style_BordersCustomization_BordersOuterV": "BordersOuterV",
 
     "Error_InvalidTarget": "目标不存在",
     "Error_FillInfo": "请填入名字以及服务器信息",
