@@ -238,6 +238,12 @@ public class CharData
             return;
         }
 
+        // metric not valid for this zone
+        if (zone.rankings.Count == 0)
+        {
+            this.Encounters.Add(new Encounter { ZoneId = zone.zone, IsNotValid = true });
+        }
+
         foreach (var ranking in zone.rankings)
         {
             if (ranking.encounter == null)
@@ -247,6 +253,7 @@ public class CharData
 
             var encounter = new Encounter
             {
+                ZoneId = zone.zone,
                 Id = ranking.encounter.id,
                 Difficulty = zone.difficulty,
                 Metric = zone.metric,
