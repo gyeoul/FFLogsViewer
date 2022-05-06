@@ -30,10 +30,12 @@ public sealed class FFLogsViewer : IDalamudPlugin
         Service.GameDataManager = new GameDataManager();
         Service.CharDataManager = new CharDataManager();
         Service.PartyListManager = new PartyListManager();
+        Service.Localization = new LocalizationManager();
         Service.FfLogsClient = new FFLogsClient();
 
         Service.MainWindow = new MainWindow();
         Service.ConfigWindow = new ConfigWindow();
+        
         this.windowSystem = new WindowSystem("FFLogsViewer");
         this.windowSystem.AddWindow(Service.ConfigWindow);
         this.windowSystem.AddWindow(Service.MainWindow);

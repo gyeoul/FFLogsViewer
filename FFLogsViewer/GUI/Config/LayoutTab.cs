@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Numerics;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
@@ -18,28 +18,28 @@ public class LayoutTab
 
     public void Draw()
     {
-        ImGui.Text("Auto-update layout: ");
+        ImGui.Text(Service.Localization.GetString("Layout_AutoUpdateLayout"));
         ImGui.SameLine();
         if (Service.Configuration.IsDefaultLayout)
         {
-            ImGui.TextColored(ImGuiColors.HealerGreen, "Enabled");
-            Util.DrawHelp("The layout will automatically update with new encounters, if the plugin is updated.");
+            ImGui.TextColored(ImGuiColors.HealerGreen, Service.Localization.GetString("Enabled"));
+            Util.DrawHelp(Service.Localization.GetString("Layout_AutoUpdateLayout_Help_Enabled"));
         }
         else
         {
-            ImGui.TextColored(ImGuiColors.DalamudRed, "Disabled");
+            ImGui.TextColored(ImGuiColors.DalamudRed, Service.Localization.GetString("Disabled"));
 
-            Util.DrawHelp("The layout will not automatically update if the plugin is updated.\nYou will have to add new encounters yourself.");
+            Util.DrawHelp(Service.Localization.GetString("Layout_AutoUpdateLayout_Help_Disabled"));
 
             ImGui.SameLine();
-            if (ImGui.SmallButton("Reset layout and resume auto-update"))
+            if (ImGui.SmallButton(Service.Localization.GetString("Layout_ResetLayout")))
             {
                 ImGui.OpenPopup("##ResetLayout");
             }
 
             if (ImGui.BeginPopup("##ResetLayout", ImGuiWindowFlags.NoMove))
             {
-                ImGui.Text("This will WIPE any changes you have made.\nAre you sure you want to do this?");
+                ImGui.Text(Service.Localization.GetString("Layout_ResetLayout_Popup"));
                 ImGui.Separator();
                 if (ImGui.Button("Yes##ResetLayout"))
                 {
@@ -67,12 +67,12 @@ public class LayoutTab
         {
             ImGui.TableSetupScrollFreeze(0, 1);
             ImGui.TableSetupColumn("##PositionCol", ImGuiTableColumnFlags.WidthFixed, 38 * ImGuiHelpers.GlobalScale);
-            ImGui.TableSetupColumn("Type");
-            ImGui.TableSetupColumn("Alias");
-            ImGui.TableSetupColumn("Expansion");
-            ImGui.TableSetupColumn("Zone");
-            ImGui.TableSetupColumn("Encounter");
-            ImGui.TableSetupColumn("Difficulty");
+            ImGui.TableSetupColumn(Service.Localization.GetString("Type"));
+            ImGui.TableSetupColumn(Service.Localization.GetString("Alias"));
+            ImGui.TableSetupColumn(Service.Localization.GetString("Expansion"));
+            ImGui.TableSetupColumn(Service.Localization.GetString("Zone"));
+            ImGui.TableSetupColumn(Service.Localization.GetString("Encounter"));
+            ImGui.TableSetupColumn(Service.Localization.GetString("Difficulty"));
             ImGui.TableSetupColumn("##EditCol", ImGuiTableColumnFlags.WidthFixed, 20 * ImGuiHelpers.GlobalScale);
             ImGui.TableHeadersRow();
 
@@ -149,7 +149,7 @@ public class LayoutTab
 
         if (ImGui.BeginPopup("##DeleteLayout", ImGuiWindowFlags.NoMove))
         {
-            ImGui.Text("This will DELETE all the entries.\nAre you sure you want to do this?");
+            ImGui.Text(Service.Localization.GetString("Layout_Delete_Popup"));
             ImGui.Separator();
             if (ImGui.Button("Yes##DeleteLayout"))
             {

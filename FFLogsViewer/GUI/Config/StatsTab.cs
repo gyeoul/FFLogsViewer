@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
 using FFLogsViewer.Manager;
@@ -12,7 +12,7 @@ public class StatsTab
     public static void Draw()
     {
         var hasChanged = false;
-        if (ImGui.BeginCombo("Default Metric", Service.Configuration.Metric.Name))
+        if (ImGui.BeginCombo(Service.Localization.GetString("Stats_DefaultMetric"), Service.Configuration.Metric.Name))
         {
             foreach (var metric in GameDataManager.AvailableMetrics)
             {
@@ -26,7 +26,7 @@ public class StatsTab
             ImGui.EndCombo();
         }
 
-        Util.SetHoverTooltip("Can be temporarily overridden in the main window");
+        Util.SetHoverTooltip(Service.Localization.GetString("Stats_DefaultMetric_Help"));
 
         if (ImGui.BeginTable(
                 "##ConfigStatsTable",
@@ -36,10 +36,10 @@ public class StatsTab
         {
             ImGui.TableSetupScrollFreeze(0, 1);
             ImGui.TableSetupColumn("##PositionCol", ImGuiTableColumnFlags.WidthFixed, 38 * ImGuiHelpers.GlobalScale);
-            var minAliasSize = Service.Configuration.Stats.Select(stat => ImGui.CalcTextSize(stat.Alias).X).Prepend(ImGui.CalcTextSize("Alias").X).Max() + 10;
-            ImGui.TableSetupColumn("Alias", ImGuiTableColumnFlags.WidthFixed, minAliasSize);
-            ImGui.TableSetupColumn("Stat");
-            ImGui.TableSetupColumn("Enabled");
+            var minAliasSize = Service.Configuration.Stats.Select(stat => ImGui.CalcTextSize(stat.Alias).X).Prepend(ImGui.CalcTextSize(Service.Localization.GetString("Alias")).X).Max() + 10;
+            ImGui.TableSetupColumn(Service.Localization.GetString("Alias"), ImGuiTableColumnFlags.WidthFixed, minAliasSize);
+            ImGui.TableSetupColumn(Service.Localization.GetString("Stats"));
+            ImGui.TableSetupColumn(Service.Localization.GetString("Enabled"));
             ImGui.TableHeadersRow();
 
             for (var i = 0; i < Service.Configuration.Stats.Count; i++)
@@ -73,7 +73,7 @@ public class StatsTab
 
                 if (stat.Type == StatType.BestAmount)
                 {
-                    Util.SetHoverTooltip("If the alias is /metric/ the alias will be replaced by the current metric");
+                    Util.SetHoverTooltip(Service.Localization.GetString("Stats_BestAmountHelp"));
                 }
 
                 ImGui.TableNextColumn();

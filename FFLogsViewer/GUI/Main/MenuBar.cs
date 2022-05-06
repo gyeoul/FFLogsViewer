@@ -102,15 +102,9 @@ public class MenuBar
 
                 if (ImGui.BeginPopup("##UpdateMessage", ImGuiWindowFlags.NoMove))
                 {
-                    ImGui.Text(
-                        "This update has completely reworked the plugin.\n" +
-                        "Layout, style, stats, metric, are all customizable in the settings.\n" +
-                        "The UI should work better with the different scaling/themes.\n" +
-                        "\n" +
-                        "If anything is broken, weird, or if you have any suggestion, do not hesitate\n" +
-                        "to create an issue on the GitHub repo.");
+                    ImGui.Text(Service.Localization.GetString("MenuBar_UpdateMessage_Text"));
 
-                    if (ImGui.Button("Dismiss##UpdateMessage"))
+                    if (ImGui.Button($"{Service.Localization.GetString("Dismiss")}##UpdateMessage"))
                     {
                         Service.Configuration.IsUpdateDismissed = true;
                         Service.Configuration.Save();
@@ -118,7 +112,7 @@ public class MenuBar
                     }
 
                     ImGui.SameLine();
-                    if (ImGui.Button("Open the GitHub repo"))
+                    if (ImGui.Button(Service.Localization.GetString("OpenGithubRepo")))
                     {
                         Util.OpenLink("https://github.com/Aireil/FFLogsViewer");
                     }

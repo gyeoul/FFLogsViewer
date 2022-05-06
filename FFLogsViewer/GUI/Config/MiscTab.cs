@@ -7,14 +7,14 @@ public class MiscTab
 {
     public static void Draw()
     {
-        if (ImGui.Button("Open the GitHub repo"))
+        if (ImGui.Button(Service.Localization.GetString("OpenGithubRepo")))
         {
             Util.OpenLink("https://github.com/Aireil/FFLogsViewer");
         }
 
         var hasChanged = false;
         ImGui.AlignTextToFramePadding();
-        ImGui.Text("Number of decimal digits for logs: ");
+        ImGui.Text(Service.Localization.GetString("Misc_LogDecimalDigit"));
         for (var i = 0; i <= 2; i++)
         {
             ImGui.SameLine();
@@ -26,14 +26,14 @@ public class MiscTab
         }
 
         var hideInCombat = Service.Configuration.HideInCombat;
-        if (ImGui.Checkbox(@"Hide in combat##HideInCombat", ref hideInCombat))
+        if (ImGui.Checkbox($@"{Service.Localization.GetString("Misc_HideInCombat")}##HideInCombat", ref hideInCombat))
         {
             Service.Configuration.HideInCombat = hideInCombat;
             hasChanged = true;
         }
 
         var contextMenu = Service.Configuration.ContextMenu;
-        if (ImGui.Checkbox("Enable context menu##ContextMenu", ref contextMenu))
+        if (ImGui.Checkbox($@"{Service.Localization.GetString("Misc_EnableContextMenu")}##ContextMenu", ref contextMenu))
         {
             if (contextMenu)
             {
@@ -48,7 +48,7 @@ public class MiscTab
             hasChanged = true;
         }
 
-        Util.SetHoverTooltip("Add a button to search characters in most context menus.");
+        Util.SetHoverTooltip(Service.Localization.GetString("Misc_EnableContextMenu_Help"));
 
         if (Service.Configuration.ContextMenu)
         {
@@ -56,45 +56,41 @@ public class MiscTab
             if (!Service.Configuration.ContextMenuStreamer)
             {
                 var contextMenuButtonName = Service.Configuration.ContextMenuButtonName;
-                if (ImGui.InputText("Button name##ContextMenuButtonName", ref contextMenuButtonName, 50))
+                if (ImGui.InputText($@"{Service.Localization.GetString("Misc_ButtonName")}##ContextMenuButtonName", ref contextMenuButtonName, 50))
                 {
                     Service.Configuration.ContextMenuButtonName = contextMenuButtonName;
                     hasChanged = true;
                 }
 
                 var openInBrowser = Service.Configuration.OpenInBrowser;
-                if (ImGui.Checkbox(@"Open in browser##OpenInBrowser", ref openInBrowser))
+                if (ImGui.Checkbox($@"{Service.Localization.GetString("Misc_OpenInBrowser")}##OpenInBrowser", ref openInBrowser))
                 {
                     Service.Configuration.OpenInBrowser = openInBrowser;
                     hasChanged = true;
                 }
 
-                Util.SetHoverTooltip("The button in context menus opens" +
-                                     "\nFF Logs in your default browser instead" +
-                                     "\nof opening the plugin window.");
+                Util.SetHoverTooltip(Service.Localization.GetString("Misc_OpenInBrowser_Help"));
             }
 
             if (!Service.Configuration.OpenInBrowser)
             {
                 var contextMenuStreamer = Service.Configuration.ContextMenuStreamer;
-                if (ImGui.Checkbox(@"Streamer mode##ContextMenuStreamer", ref contextMenuStreamer))
+                if (ImGui.Checkbox($@"{Service.Localization.GetString("Misc_StreamerMode")}##ContextMenuStreamer", ref contextMenuStreamer))
                 {
                     Service.Configuration.ContextMenuStreamer = contextMenuStreamer;
                     hasChanged = true;
                 }
 
-                Util.SetHoverTooltip("When the main window is open, opening a context menu" +
-                                     "\nwill automatically search for the selected player." +
-                                     "\nThis mode does not add a button to the context menu.");
+                Util.SetHoverTooltip(Service.Localization.GetString("Misc_StreamerMode_Help"));
             }
 
             ImGui.Unindent();
         }
 
-        ImGui.Text("API client:");
+        ImGui.Text(Service.Localization.GetString("Misc_API_Client"));
 
         var configurationClientId = Service.Configuration.ClientId;
-        if (ImGui.InputText("Client ID##ClientId", ref configurationClientId, 50))
+        if (ImGui.InputText($"{Service.Localization.GetString("Misc_API_ClientID")}##ClientId", ref configurationClientId, 50))
         {
             Service.Configuration.ClientId = configurationClientId;
             Service.FfLogsClient.SetToken();
@@ -102,7 +98,7 @@ public class MiscTab
         }
 
         var configurationClientSecret = Service.Configuration.ClientSecret;
-        if (ImGui.InputText("Client secret##ClientSecret", ref configurationClientSecret, 50))
+        if (ImGui.InputText($"{Service.Localization.GetString("Misc_API_ClientSecret")}##ClientSecret", ref configurationClientSecret, 50))
         {
             Service.Configuration.ClientSecret = configurationClientSecret;
             Service.FfLogsClient.SetToken();
@@ -110,46 +106,46 @@ public class MiscTab
         }
 
         if (Service.FfLogsClient.IsTokenValid)
-            ImGui.TextColored(ImGuiColors.HealerGreen, "This client is valid.");
+            ImGui.TextColored(ImGuiColors.HealerGreen, Service.Localization.GetString("Misc_API_ClientValid"));
         else
-            ImGui.TextColored(ImGuiColors.DalamudRed, "This client is NOT valid.");
+            ImGui.TextColored(ImGuiColors.DalamudRed, Service.Localization.GetString("Misc_API_ClientNotValid"));
 
-        if (ImGui.CollapsingHeader("How to get a client ID and a client secret:"))
+        if (ImGui.CollapsingHeader(Service.Localization.GetString("Misc_API_Client_Tutorial")))
         {
             ImGui.Bullet();
-            ImGui.Text("Open https://www.fflogs.com/api/clients/ or");
+            ImGui.Text(Service.Localization.GetString("Misc_API_Client_Tutorial_1"));
             ImGui.SameLine();
-            if (ImGui.Button("Click here##APIClientLink"))
+            if (ImGui.Button($"{Service.Localization.GetString("ClickHere")}##APIClientLink"))
             {
                 Util.OpenLink("https://www.fflogs.com/api/clients/");
             }
 
             ImGui.Bullet();
-            ImGui.Text("Create a new client");
+            ImGui.Text(Service.Localization.GetString("Misc_API_Client_Tutorial_2"));
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 7);
 
             ImGui.Bullet();
-            ImGui.Text("Choose any name, for example: \"Plugin\"");
+            ImGui.Text(Service.Localization.GetString("Misc_API_Client_Tutorial_3"));
             ImGui.SameLine();
-            if (ImGui.Button("Copy##APIClientCopyName"))
+            if (ImGui.Button($"{Service.Localization.GetString("Copy")}##APIClientCopyName"))
             {
                 ImGui.SetClipboardText("Plugin");
             }
 
             ImGui.Bullet();
-            ImGui.Text("Enter any URL, for example: \"https://www.example.com\"");
+            ImGui.Text(Service.Localization.GetString("Misc_API_Client_Tutorial_4"));
             ImGui.SameLine();
-            if (ImGui.Button("Copy##APIClientCopyURL"))
+            if (ImGui.Button($"{Service.Localization.GetString("Copy")}##APIClientCopyUrl"))
             {
                 ImGui.SetClipboardText("https://www.example.com");
             }
 
             ImGui.Bullet();
-            ImGui.Text("Do NOT check the Public Client option");
+            ImGui.Text(Service.Localization.GetString("Misc_API_Client_Tutorial_5"));
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 7);
 
             ImGui.Bullet();
-            ImGui.Text("Paste both client ID and secret above");
+            ImGui.Text(Service.Localization.GetString("Misc_API_Client_Tutorial_6"));
         }
 
         if (hasChanged)

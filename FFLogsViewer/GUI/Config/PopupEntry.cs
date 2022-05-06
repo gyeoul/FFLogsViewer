@@ -48,26 +48,26 @@ public class PopupEntry
             var currLayoutEntry = this.mode == Mode.Adding ? this.AddLayoutEntry : this.EditLayoutEntry;
 
             var tmpLayoutEntryType = currLayoutEntry.Type;
-            if (ImGui.RadioButton("Encounter", tmpLayoutEntryType == LayoutEntryType.Encounter))
+            if (ImGui.RadioButton(Service.Localization.GetString("Encounter"), tmpLayoutEntryType == LayoutEntryType.Encounter))
             {
                 currLayoutEntry.Type = LayoutEntryType.Encounter;
             }
 
             ImGui.SameLine();
-            if (ImGui.RadioButton("Header", tmpLayoutEntryType == LayoutEntryType.Header))
+            if (ImGui.RadioButton(Service.Localization.GetString("PopupEntry_Header"), tmpLayoutEntryType == LayoutEntryType.Header))
             {
                 currLayoutEntry.Type = LayoutEntryType.Header;
             }
 
-            Util.DrawHelp("A header displays the stat for each column.");
+            Util.DrawHelp(Service.Localization.GetString("PopupEntry_Header_Help"));
 
             var alias = currLayoutEntry.Alias;
-            if (ImGui.InputText("Alias", ref alias, 400))
+            if (ImGui.InputText(Service.Localization.GetString("Alias"), ref alias, 400))
             {
                 currLayoutEntry.Alias = alias;
             }
 
-            Util.DrawHelp("Optional, will overwrite the encounter name from FF Logs");
+            Util.DrawHelp(Service.Localization.GetString("PopupEntry_Header_Alias_Help"));
 
             if (!Service.GameDataManager.IsDataReady && !Service.GameDataManager.IsDataLoading && !Service.GameDataManager.HasFailed)
             {
@@ -78,14 +78,14 @@ public class PopupEntry
             {
                 if (!Service.GameDataManager.IsDataReady && Service.GameDataManager.IsDataLoading)
                 {
-                    ImGui.Text("Fetching data...");
+                    ImGui.Text(Service.Localization.GetString("FetchingData"));
                     ImGui.EndPopup();
                     return;
                 }
 
                 if (!Service.GameDataManager.IsDataLoading && Service.GameDataManager.HasFailed)
                 {
-                    if (ImGui.Button("Couldn't fetch data, try again?"))
+                    if (ImGui.Button(Service.Localization.GetString("PopupEntry_FetchDataFailed")))
                     {
                         Service.GameDataManager.HasFailed = false;
                     }
@@ -114,7 +114,7 @@ public class PopupEntry
     private void DrawEntryEncounter(LayoutEntry currLayoutEntry)
     {
         var expansions = Service.GameDataManager.GameData!.Data!.WorldData!.Expansions!;
-        if (ImGui.BeginCombo("Expansion##PopupEntryExpansion", currLayoutEntry.Expansion))
+        if (ImGui.BeginCombo($"{Service.Localization.GetString("Expansion")}##PopupEntryExpansion", currLayoutEntry.Expansion))
         {
             for (var i = 0; i < expansions.Count; i++)
             {
@@ -135,7 +135,7 @@ public class PopupEntry
         }
 
         var zones = expansions!.FirstOrDefault(expansion => expansion.Name == currLayoutEntry.Expansion)?.Zones;
-        if (ImGui.BeginCombo("Zone##PopupEntryZone", currLayoutEntry.Zone))
+        if (ImGui.BeginCombo($"{Service.Localization.GetString("Zone")}##PopupEntryZone", currLayoutEntry.Zone))
         {
             if (zones is { Count: > 0 })
             {
@@ -155,14 +155,14 @@ public class PopupEntry
             }
             else
             {
-                ImGui.Selectable("No zone found for this expansion.", true, ImGuiSelectableFlags.Disabled);
+                ImGui.Selectable(Service.Localization.GetString("PopupEntry_NoZoneFound"), true, ImGuiSelectableFlags.Disabled);
             }
 
             ImGui.EndCombo();
         }
 
         var encounters = zones?.FirstOrDefault(zone => zone.Name == currLayoutEntry.Zone)?.Encounters;
-        if (ImGui.BeginCombo("Encounter##PopupEntryEncounter", currLayoutEntry.Encounter))
+        if (ImGui.BeginCombo($"{Service.Localization.GetString("Encounter")}##PopupEntryEncounter", currLayoutEntry.Encounter))
         {
             if (encounters is { Count: > 0 })
             {
@@ -180,7 +180,7 @@ public class PopupEntry
             }
             else
             {
-                ImGui.Selectable("No encounter found for this zone.", true, ImGuiSelectableFlags.Disabled);
+                ImGui.Selectable(Service.Localization.GetString("PopupEntry_NoEncounterFound"), true, ImGuiSelectableFlags.Disabled);
             }
 
             ImGui.EndCombo();
@@ -196,7 +196,7 @@ public class PopupEntry
             }
             else
             {
-                if (ImGui.BeginCombo("Difficulty##PopupEntryDifficulty", currLayoutEntry.Difficulty))
+                if (ImGui.BeginCombo($"{Service.Localization.GetString("Difficulty")}##PopupEntryDifficulty", currLayoutEntry.Difficulty))
                 {
                     for (var i = 0; i < difficulties.Count; i++)
                     {
@@ -216,7 +216,7 @@ public class PopupEntry
         }
 
         var isButtonDisabled = !currLayoutEntry.IsEncounterValid();
-        if (Util.DrawDisabledButton(this.mode == Mode.Adding ? "Add" : "Edit", isButtonDisabled)
+        if (Util.DrawDisabledButton(this.mode == Mode.Adding ? Service.Localization.GetString("Add") : Service.Localization.GetString("Edit"), isButtonDisabled)
             && !isButtonDisabled)
         {
             if (this.mode == Mode.Adding)
@@ -241,7 +241,7 @@ public class PopupEntry
         if (isButtonDisabled)
         {
             ImGui.SameLine();
-            ImGui.TextColored(ImGuiColors.DalamudGrey, "Please select an encounter.");
+            ImGui.TextColored(ImGuiColors.DalamudGrey, Service.Localization.GetString("PopupEntry_SelectAnEncounter"));
         }
 
         if (this.mode == Mode.Adding && Service.Configuration.Layout.Any(layoutEntry => currLayoutEntry.Type != LayoutEntryType.Header &&
@@ -251,7 +251,7 @@ public class PopupEntry
                                                                              currLayoutEntry.Encounter == layoutEntry.Encounter))
         {
             ImGui.SameLine();
-            ImGui.Text("Note: this encounter is already in the layout.");
+            ImGui.Text(Service.Localization.GetString("PopupEntry_EncounterAlreadyInLayout"));
         }
 
         if (this.mode == Mode.Editing)
@@ -262,7 +262,7 @@ public class PopupEntry
 
     private void DrawEntryHeader(LayoutEntry currLayoutEntry)
     {
-        if (ImGui.Button(this.mode == Mode.Adding ? "添加" : "编辑"))
+        if (ImGui.Button(this.mode == Mode.Adding ? Service.Localization.GetString("Add") : Service.Localization.GetString("Edit")))
         {
             var newLayoutEntry = currLayoutEntry.CloneHeader();
 

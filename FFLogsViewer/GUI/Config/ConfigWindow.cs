@@ -19,25 +19,25 @@ public class ConfigWindow : Window
     {
         ImGui.BeginTabBar("ConfigTabs");
 
-        if (ImGui.BeginTabItem("其他"))
+        if (ImGui.BeginTabItem(Service.Localization.GetString("Misc")))
         {
             MiscTab.Draw();
             ImGui.EndTabItem();
         }
 
-        if (ImGui.BeginTabItem("布局"))
+        if (ImGui.BeginTabItem(Service.Localization.GetString("Layout")))
         {
             this.LayoutTab.Draw();
             ImGui.EndTabItem();
         }
 
-        if (ImGui.BeginTabItem("数据"))
+        if (ImGui.BeginTabItem(Service.Localization.GetString("Stats")))
         {
             StatsTab.Draw();
             ImGui.EndTabItem();
         }
 
-        if (ImGui.BeginTabItem("样式"))
+        if (ImGui.BeginTabItem(Service.Localization.GetString("Style")))
         {
             StyleTab.Draw();
             ImGui.EndTabItem();

@@ -58,11 +58,11 @@ public class HeaderBar
         var calcInputSize = (contentRegionAvailWidth - (ImGui.GetStyle().ItemSpacing.X * 2) - buttonsWidth) / 3;
 
         ImGui.SetNextItemWidth(calcInputSize);
-        ImGui.InputTextWithHint("##FirstName", "名字", ref Service.CharDataManager.DisplayedChar.FirstName, 15, ImGuiInputTextFlags.CharsNoBlank);
+        ImGui.InputTextWithHint("##FirstName", Service.Localization.GetString("Main_Name"), ref Service.CharDataManager.DisplayedChar.FirstName, 15, ImGuiInputTextFlags.CharsNoBlank);
 
         ImGui.SameLine();
         ImGui.SetNextItemWidth(calcInputSize);
-        ImGui.InputTextWithHint("##WorldName", "服务器", ref Service.CharDataManager.DisplayedChar.WorldName, 15, ImGuiInputTextFlags.CharsNoBlank);
+        ImGui.InputTextWithHint("##WorldName", Service.Localization.GetString("Main_World"), ref Service.CharDataManager.DisplayedChar.WorldName, 15, ImGuiInputTextFlags.CharsNoBlank);
 
         ImGui.SameLine();
         if (Util.DrawButtonIcon(FontAwesomeIcon.Search))
@@ -70,7 +70,7 @@ public class HeaderBar
             Service.CharDataManager.DisplayedChar.FetchData();
         }
 
-        Util.SetHoverTooltip("搜索");
+        Util.SetHoverTooltip(Service.Localization.GetString("Main_Search"));
 
         ImGui.SameLine();
         if (Util.DrawButtonIcon(FontAwesomeIcon.Crosshairs))
@@ -78,7 +78,7 @@ public class HeaderBar
             Service.CharDataManager.DisplayedChar.FetchTargetChar();
         }
 
-        Util.SetHoverTooltip("当前目标");
+        Util.SetHoverTooltip(Service.Localization.GetString("Main_Target"));
 
         ImGui.SameLine();
         if (Util.DrawButtonIcon(FontAwesomeIcon.Clipboard))
@@ -86,7 +86,7 @@ public class HeaderBar
             Service.CharDataManager.DisplayedChar.FetchClipboardCharacter();
         }
 
-        Util.SetHoverTooltip("从剪贴板导入");
+        Util.SetHoverTooltip(Service.Localization.GetString("Main_SearchClipboard"));
 
         ImGui.SameLine();
         if (Util.DrawButtonIcon(FontAwesomeIcon.UsersCog))
@@ -94,7 +94,7 @@ public class HeaderBar
             ImGui.OpenPopup("##PartyList");
         }
 
-        Util.SetHoverTooltip("小队成员");
+        Util.SetHoverTooltip(Service.Localization.GetString("Main_PartyMembers"));
 
         if (ImGui.BeginPopup("##PartyList", ImGuiWindowFlags.NoMove))
         {
@@ -125,10 +125,7 @@ public class HeaderBar
                         else
                         {
                             ImGui.Text("(?)");
-                            Util.SetHoverTooltip("在获取图标时发生错误.\n" +
-                                                 "Please create an issue on the GitHub with a screenshot of the red lines in /xllog.\n" +
-                                                 "This is probably due to TexTools corrupting your game files.\n" +
-                                                 "This shouldn't affect the party members functionality.");
+                            Util.SetHoverTooltip(Service.Localization.GetString("Main_IconError"));
                         }
 
                         ImGui.SameLine();
@@ -154,7 +151,7 @@ public class HeaderBar
             }
             else
             {
-                ImGui.Text("找不到小队成员");
+                ImGui.Text(Service.Localization.GetString("Main_NoPartyMember"));
             }
 
             ImGui.EndPopup();
@@ -167,8 +164,8 @@ public class HeaderBar
         if (!Service.FfLogsClient.IsTokenValid)
         {
             var message = FFLogsClient.IsConfigSet()
-                              ? "API client 无效, 点我打开设置."
-                              : "API client 为空, 点我打开设置.";
+                              ? Service.Localization.GetString("Main_InvalidAPIClient")
+                              : Service.Localization.GetString("Main_APIClientNotSetup");
             ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
             Util.CenterSelectable(message, ref this.isConfigClicked);
             ImGui.PopStyleColor();
@@ -180,21 +177,21 @@ public class HeaderBar
         {
             if (Service.CharDataManager.DisplayedChar.IsDataLoading)
             {
-                Util.CenterText("加载中...");
+                Util.CenterText(Service.Localization.GetString("Main_Loading"));
             }
             else
             {
                 if (Service.CharDataManager.DisplayedChar.IsDataReady)
                 {
                     Util.CenterSelectable(
-                        $"正在查看 {Service.CharDataManager.DisplayedChar.LoadedFirstName}@{Service.CharDataManager.DisplayedChar.LoadedWorldName} 的logs",
+                        Service.Localization.GetString("Main_ViewingLogs").Replace("{Name}", Service.CharDataManager.DisplayedChar.LoadedFirstName).Replace("{World}", Service.CharDataManager.DisplayedChar.LoadedWorldName),
                         ref this.isProfileLinkClicked);
 
-                    Util.SetHoverTooltip("点我到 FFlogs 上查看");
+                    Util.SetHoverTooltip(Service.Localization.GetString("Main_OpenOnFFLogs"));
                 }
                 else
                 {
-                    Util.CenterText("等待玩家信息...");
+                    Util.CenterText(Service.Localization.GetString("Main_Waiting"));
                 }
             }
         }
@@ -205,7 +202,7 @@ public class HeaderBar
 
         if (Service.Configuration.Layout.Count == 0)
         {
-            Util.CenterSelectable("你还没设置布局呢. 点我打开菜单.", ref this.isConfigClicked);
+            Util.CenterSelectable(Service.Localization.GetString("Main_NoLayoutSetup"), ref this.isConfigClicked);
         }
     }
 
@@ -227,8 +224,8 @@ public class HeaderBar
     {
         return new[]
         {
-            ImGui.CalcTextSize("名字").X,
-            ImGui.CalcTextSize("服务器").X,
+            ImGui.CalcTextSize(Service.Localization.GetString("Main_Name")).X,
+            ImGui.CalcTextSize(Service.Localization.GetString("Main_World")).X,
             ImGui.CalcTextSize(Service.CharDataManager.DisplayedChar.FirstName).X,
             ImGui.CalcTextSize(Service.CharDataManager.DisplayedChar.WorldName).X,
         }.Max() + (ImGui.GetStyle().FramePadding.X * 2);

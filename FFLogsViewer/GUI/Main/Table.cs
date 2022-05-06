@@ -86,7 +86,7 @@ public class Table
                     if (encounter is { IsLockedIn: false })
                     {
                         ImGui.PopStyleColor();
-                        Util.SetHoverTooltip("未锁定");
+                        Util.SetHoverTooltip(Service.Localization.GetString("NotLockedIn"));
                     }
 
                     foreach (var stat in enabledStats)
