@@ -38,7 +38,7 @@ public class CharData
     {
         if (playerCharacter.HomeWorld.GameData?.Name == null)
         {
-            Service.MainWindow.SetErrorMessage("无法获取玩家服务器,请稍后再试");
+            Service.MainWindow.SetErrorMessage(Service.Localization.GetString("Error_CannotFetchWorldName"));
             PluginLog.Error("SetInfo character world was null");
             return false;
         }
@@ -65,7 +65,7 @@ public class CharData
         }
         else
         {
-            Service.MainWindow.SetErrorMessage("目标不存在");
+            Service.MainWindow.SetErrorMessage(Service.Localization.GetString("Error_InvalidTarget"));
         }
     }
 
@@ -80,14 +80,14 @@ public class CharData
 
         if (!this.IsInfoSet())
         {
-            Service.MainWindow.SetErrorMessage("请填入名字以及服务器信息.");
+            Service.MainWindow.SetErrorMessage(Service.Localization.GetString("Error_FillInfo"));
             return;
         }
 
         var regionName = CharDataManager.GetRegionName(this.WorldName);
         if (regionName == null)
         {
-            Service.MainWindow.SetErrorMessage("服务器名无效");
+            Service.MainWindow.SetErrorMessage(Service.Localization.GetString("Error_InvalidWorldName"));
             return;
         }
 
@@ -101,7 +101,7 @@ public class CharData
             if (rawData == null)
             {
                 this.IsDataLoading = false;
-                Service.MainWindow.SetErrorMessage("无法连接到 FF Logs 服务器");
+                Service.MainWindow.SetErrorMessage(Service.Localization.GetString("Error_CannotReachServer"));
                 PluginLog.Error("rawData is null");
                 return;
             }
@@ -111,7 +111,7 @@ public class CharData
                 if (rawData.error != null && rawData.error == "Unauthenticated.")
                 {
                     this.IsDataLoading = false;
-                    Service.MainWindow.SetErrorMessage("API Client 无效,请检查配置文件");
+                    Service.MainWindow.SetErrorMessage(Service.Localization.GetString("Error_InvalidApiClient"));
                     PluginLog.Log($"Unauthenticated: {rawData}");
                     return;
                 }
@@ -119,13 +119,13 @@ public class CharData
                 if (rawData.errors != null)
                 {
                     this.IsDataLoading = false;
-                    Service.MainWindow.SetErrorMessage("GraphQL 请求不正确.");
+                    Service.MainWindow.SetErrorMessage(Service.Localization.GetString("Error_MalformedQuery"));
                     PluginLog.Log($"Malformed GraphQL query: {rawData}");
                     return;
                 }
 
                 this.IsDataLoading = false;
-                Service.MainWindow.SetErrorMessage("无法在 FF Logs 上找到该玩家的信息");
+                Service.MainWindow.SetErrorMessage(Service.Localization.GetString("Error_CharacterNotFound"));
                 return;
             }
 
@@ -134,8 +134,7 @@ public class CharData
             if (character.hidden == "true")
             {
                 this.IsDataLoading = false;
-                Service.MainWindow.SetErrorMessage(
-                    $"{this.FirstName}@{this.WorldName}的 logs 被隐藏了");
+                Service.MainWindow.SetErrorMessage(Service.Localization.GetString("Error_HiddenLogs").Replace("{Name}", this.FirstName).Replace("{World}", this.WorldName));
                 return;
             }
 
@@ -158,7 +157,7 @@ public class CharData
             this.IsDataLoading = false;
             if (!t.IsFaulted) return;
             if (t.Exception == null) return;
-            Service.MainWindow.SetErrorMessage("网络错误,请稍后再试");
+            Service.MainWindow.SetErrorMessage(Service.Localization.GetString("Error_NetworkingError"));
             foreach (var e in t.Exception.Flatten().InnerExceptions)
             {
                 PluginLog.Error(e, "Networking error");
@@ -199,7 +198,7 @@ public class CharData
         {
             if (ImGui.GetClipboardText() == null)
             {
-                Service.MainWindow.SetErrorMessage("Couldn't get clipboard text");
+                Service.MainWindow.SetErrorMessage(Service.Localization.GetString("Error_CouldntGetClipboardText"));
                 return;
             }
 
@@ -207,7 +206,7 @@ public class CharData
         }
         catch
         {
-            Service.MainWindow.SetErrorMessage("Couldn't get clipboard text");
+            Service.MainWindow.SetErrorMessage(Service.Localization.GetString("Error_CouldntGetClipboardText"));
             return;
         }
 
@@ -218,7 +217,7 @@ public class CharData
     {
         if (!this.ParseTextForChar(text))
         {
-            Service.MainWindow.SetErrorMessage("No character found.");
+            Service.MainWindow.SetErrorMessage(Service.Localization.GetString("Error_NoCharacterFound"));
             return;
         }
 

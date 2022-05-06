@@ -106,5 +106,16 @@
     "Style_BordersCustomization_BordersOuterH": "BordersOutterH",
     "Style_BordersCustomization_BordersOuterV": "BordersOutterV",
 
-
+    "Error_InvalidTarget": "Not a valid target",
+    "Error_FillInfo": "Please fill first name, last name, and world",
+    "Error_InvalidWorldName": "World not supported or invalid",
+    "Error_CannotReachServer": "Could not reach FF Logs servers",
+    "Error_CannotFetchWorldName": "Character world is invalid, please try again",
+    "Error_MalformedQuery": "Malformed GraphQL query.",
+    "Error_CharacterNotFound": "Character not found on FF Logs",
+    "Error_InvalidApiClient": "API Client not valid, check config",
+    "Error_HiddenLogs": "{Name}@{World}'s logs are hidden",
+    "Error_NetworkingError": "Networking error, please try again",
+    "Error_CouldntGetClipboardText": "Couldn't get clipboard text",
+    "Error_NoCharacterFound": "No character found from clipboard"
 }

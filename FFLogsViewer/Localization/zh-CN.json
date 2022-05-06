@@ -107,7 +107,18 @@
     "Style_BordersCustomization_BordersInnerH": "BordersInnerH",
     "Style_BordersCustomization_BordersInnerV": "BordersInnerV",
     "Style_BordersCustomization_BordersOuterH": "BordersOutterH",
-    "Style_BordersCustomization_BordersOuterV": "BordersOutterV"
+    "Style_BordersCustomization_BordersOuterV": "BordersOutterV",
 
-
+    "Error_InvalidTarget": "目标不存在",
+    "Error_FillInfo": "请填入名字以及服务器信息",
+    "Error_InvalidWorldName": "服务器名无效",
+    "Error_CannotReachServer": "无法连接到 FF Logs 服务器",
+    "Error_CannotFetchWorldName": "无法获取玩家服务器,请稍后再试",
+    "Error_MalformedQuery": "GraphQL 请求不正确.",
+    "Error_CharacterNotFound": "无法在 FF Logs 上找到该玩家的信息",
+    "Error_InvalidApiClient": "API 客户端无效,请检查配置文件",
+    "Error_HiddenLogs": "{Name}@{World} 的 logs 被隐藏了",
+    "Error_NetworkingError": "网络错误,请稍后再试",
+    "Error_CouldntGetClipboardText": "无法获取剪贴板内容",
+    "Error_NoCharacterFound": "在剪贴板中找不到玩家信息"
 }
