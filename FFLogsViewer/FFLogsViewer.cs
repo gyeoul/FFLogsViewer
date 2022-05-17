@@ -52,7 +52,7 @@ public sealed class FFLogsViewer : IDalamudPlugin
         Commands.Dispose();
         Service.Common.Dispose();
         this.contextMenu.Dispose();
-        Service.PartyListManager.Dispose();
+        Service.GameDataManager.Dispose();
 
         Service.Interface.UiBuilder.OpenConfigUi -= OpenConfigUi;
         Service.Interface.UiBuilder.Draw -= this.windowSystem.Draw;

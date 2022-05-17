@@ -115,28 +115,29 @@ public class HeaderBar
                         ImGui.TableNextColumn();
 
                         var partyMember = partyList[i];
-
-                        var icon = Service.PartyListManager.GetJobIcon(partyMember.JobId);
                         var iconSize = 25 * ImGuiHelpers.GlobalScale;
-                        if (icon != null)
-                        {
-                            ImGui.Image(icon.ImGuiHandle, new Vector2(iconSize));
-                        }
-                        else
-                        {
-                            ImGui.Text("(?)");
-                            Util.SetHoverTooltip(Service.Localization.GetString("Main_IconError"));
-                        }
+                        var middleCursorPosY = ImGui.GetCursorPosY() + (iconSize / 2) - (ImGui.CalcTextSize("R").Y / 2);
 
-                        ImGui.SameLine();
                         if (ImGui.Selectable($"##PartyListSel{i}", false, ImGuiSelectableFlags.SpanAllColumns, new Vector2(0, iconSize)))
                         {
                             Service.CharDataManager.DisplayedChar.FetchTextCharacter($"{partyMember.Name}@{partyMember.World}");
                         }
 
+                        var icon = Service.GameDataManager.JobIconsManager.GetJobIcon(partyMember.JobId);
+                        if (icon != null)
+                        {
+                            ImGui.SameLine();
+                            ImGui.Image(icon.ImGuiHandle, new Vector2(iconSize));
+                        }
+                        else
+                        {
+                            ImGui.SetCursorPosY(middleCursorPosY);
+                            ImGui.Text("(?)");
+                            Util.SetHoverTooltip(Service.Localization.GetString("Main_IconError"));
+                        }
+
                         ImGui.TableNextColumn();
 
-                        var middleCursorPosY = ImGui.GetCursorPosY() + (iconSize / 2) - (ImGui.CalcTextSize("R").Y / 2);
                         ImGui.SetCursorPosY(middleCursorPosY);
                         ImGui.Text(partyMember.Name);
 

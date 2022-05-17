@@ -87,9 +87,6 @@ public class StyleTab
 
         ImGui.Indent();
 
-        hasStyleChanged |= ImGui.Checkbox(Service.Localization.GetString("Style_AlwaysDisplayTable"), ref style.IsTableAlwaysDrawn);
-        Util.DrawHelp(Service.Localization.GetString("Style_AlwaysDisplayTable_Help"));
-
         if (ImGui.Button(Service.Localization.GetString("Style_BordersCustomization")))
         {
             ImGui.OpenPopup("##Borders");
