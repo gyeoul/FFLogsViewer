@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using FFLogsViewer.Manager;
 using Lumina.Excel.GeneratedSheets;
@@ -80,7 +80,7 @@ public class ContextMenu : IDisposable
 
     private static void OnOpenContextMenu(ContextMenuOpenArgs args)
     {
-        if (!Service.Interface.UiBuilder.ShouldModifyUi || !IsMenuValid(args))
+        if (/*!Service.Interface.UiBuilder.ShouldModifyUi || */!IsMenuValid(args))
             return;
 
         if (Service.Configuration.ContextMenuStreamer)
