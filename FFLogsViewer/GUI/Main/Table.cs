@@ -100,12 +100,12 @@ public class Table
                     if (encounter == null)
                     {
                         ImGui.PopStyleColor();
-                        Util.SetHoverTooltip("No data available, this is expected if this encounter has just be added.");
+                        Util.SetHoverTooltip(Service.Localization.GetString("Main_DataNotAvailable"));
                     }
                     else if (encounter is { IsMetricValid: false })
                     {
                         ImGui.PopStyleColor();
-                        Util.SetHoverTooltip("This metric is not supported by this encounter.\nFor some content, aDPS and HPS are the only allowed metrics.");
+                        Util.SetHoverTooltip(Service.Localization.GetString("Main_NotSupportedMetricWarning"));
                     }
                     else if (encounter is { IsLockedIn: false })
                     {

@@ -40,6 +40,7 @@
     "Main_Waiting": "Waiting...",
     "Main_NoLayoutSetup": "You have no layout set up. Click to open settings.",
     "Main_NotSupportedMetricWarning": "This metric is not supported by this encounter.\nFor old content, aDPS and HPS are usually the only allowed metrics.",
+    "Main_DataNotAvailable": "No data available, this is expected if this encounter has just be added.",
 
     "Layout_AutoUpdateLayout": "Auto-update layout: ",
     "Layout_AutoUpdateLayout_Help_Enabled": "The layout will automatically update with new encounters, if the plugin is updated.",

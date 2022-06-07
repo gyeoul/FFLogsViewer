@@ -1,18 +1,18 @@
 {
-  "Author": "Aireil",
-  "Name": "FF Logs Viewer",
-  "Description": "在游戏里查看玩家在FFLogs上的数据的插件。",
-  "Punchline": "View FF Logs ranking percentiles in-game.",
-  "RepoUrl": "https://github.com/NukoOoOoOoO/FFLogsViewer",
-  "IconUrl": "https://github.com/NukoOoOoOoO/FFLogsViewer/raw/CN-Ver/res/icon.png",
-  "ImageUrls": [
-    "https://github.com/NukoOoOoOoO/FFLogsViewer/raw/CN-Ver/res/banner.png"
-  ],
-  "Tags": [
-    "FFLogs",
-    "FFLog",
-    "FFLo",
-    "FFL"
-  ],
-    "Changelog": "- 2.0.4.5: Penumbra API update + library change for context menu button."
+    "Author": "Aireil",
+    "Name": "FF Logs Viewer",
+    "Description": "在游戏里查看玩家在FFLogs上的数据的插件。",
+    "Punchline": "在游戏里查看玩家在FFLogs上的数据的.",
+    "RepoUrl": "https://github.com/NukoOoOoOoO/FFLogsViewer",
+    "IconUrl": "https://github.com/NukoOoOoOoO/FFLogsViewer/raw/CN-Ver/res/icon.png",
+    "ImageUrls": [
+        "https://github.com/NukoOoOoOoO/FFLogsViewer/raw/CN-Ver/res/banner.png"
+    ],
+    "Tags": [
+        "FFLogs",
+        "FFLog",
+        "FFLo",
+        "FFL"
+    ],
+    "Changelog": "- 2.0.4.5: Penumbra API + library change for context menu button."
 }
