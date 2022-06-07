@@ -142,7 +142,7 @@ public class Table
                                 text = encounter?.BestAmount?.ToString();
                                 break;
                             case StatType.Job:
-                                text = encounter?.Job?.Name;
+                                text = encounter?.Job?.Name != null ? Service.Localization.GetString(encounter?.Job?.Name) : encounter?.Job?.Name;
                                 color = encounter?.Job?.Color;
                                 break;
                             case StatType.BestJob:

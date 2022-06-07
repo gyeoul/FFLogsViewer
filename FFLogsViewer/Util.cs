@@ -33,7 +33,7 @@ public class Util
         return ret;
     }
 
-    public static bool DrawDisabledButton(string label, bool isDisabled)
+    public static bool DrawDisabledButton(string? label, bool isDisabled)
     {
         ImGui.PushStyleVar(ImGuiStyleVar.Alpha, isDisabled ? 0.5f : 1.0f);
         var ret = ImGui.Button(label);
@@ -42,7 +42,7 @@ public class Util
         return ret;
     }
 
-    public static void DrawHelp(string helpMessage)
+    public static void DrawHelp(string? helpMessage)
     {
         ImGui.SameLine();
         ImGui.TextColored(ImGuiColors.DalamudGrey, "(?)");
@@ -83,32 +83,32 @@ public class Util
         return color / 255;
     }
 
-    public static void CenterCursor(string text)
+    public static void CenterCursor(string? text)
     {
         var offset = (ImGui.GetContentRegionAvail().X - ImGui.CalcTextSize(text).X) / 2;
         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offset);
     }
 
-    public static void CenterTextColored(Vector4 color, string text)
+    public static void CenterTextColored(Vector4 color, string? text)
     {
         CenterCursor(text);
         ImGui.TextColored(color, text);
     }
 
-    public static void CenterText(string text)
+    public static void CenterText(string? text)
     {
         CenterCursor(text);
         ImGui.TextUnformatted(text);
     }
 
-    public static void CenterSelectable(string text, ref bool isClicked)
+    public static void CenterSelectable(string? text, ref bool isClicked)
     {
         CenterCursor(text);
         var textSize = ImGui.CalcTextSize(text);
         ImGui.Selectable(text, ref isClicked, ImGuiSelectableFlags.None, textSize);
     }
 
-    public static void SetHoverTooltip(string tooltip)
+    public static void SetHoverTooltip(string? tooltip)
     {
         if (ImGui.IsItemHovered())
         {

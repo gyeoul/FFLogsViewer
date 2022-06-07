@@ -2,7 +2,7 @@
     "Author": "Aireil",
     "Name": "FF Logs Viewer",
     "Description": "在游戏里查看玩家在FFLogs上的数据的插件。",
-    "Punchline": "在游戏里查看玩家在FFLogs上的数据的.",
+    "Punchline": "在游戏里查看玩家在FFLogs上的数据的插件。",
     "RepoUrl": "https://github.com/NukoOoOoOoO/FFLogsViewer",
     "IconUrl": "https://github.com/NukoOoOoOoO/FFLogsViewer/raw/CN-Ver/res/icon.png",
     "ImageUrls": [
@@ -14,5 +14,5 @@
         "FFLo",
         "FFL"
     ],
-    "Changelog": "- 2.0.4.5: Penumbra API + library change for context menu button."
+    "Changelog": "- 2.0.4.5: Penumbra API + library change for context menu button.\n- 2.0.4.5-hc: 更改了 Github 仓库的链接，增加职业名翻译"
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Dalamud.Game.Command;
 
 namespace FFLogsViewer;
@@ -7,6 +7,7 @@ public class Commands
 {
     private const string CommandName = "/fflogs";
     private const string SettingsCommandName = "/fflogsconfig";
+    private const string SettingsCommandName_2 = "/fflogscfg";
 
     public Commands()
     {
@@ -21,12 +22,18 @@ public class Commands
             HelpMessage = "Toggle the config window.",
             ShowInHelp = true,
         });
+        Service.CommandManager.AddHandler(SettingsCommandName_2, new CommandInfo(OnCommand)
+        {
+            HelpMessage = "Toggle the config window.",
+            ShowInHelp = true,
+        });
     }
 
     public static void Dispose()
     {
         Service.CommandManager.RemoveHandler(CommandName);
         Service.CommandManager.RemoveHandler(SettingsCommandName);
+        Service.CommandManager.RemoveHandler(SettingsCommandName_2);
     }
 
     private static void OnCommand(string command, string args)
@@ -34,6 +41,7 @@ public class Commands
         switch (command)
         {
             case CommandName when args.Equals("config", StringComparison.OrdinalIgnoreCase):
+            case SettingsCommandName_2:
             case SettingsCommandName:
                 Service.ConfigWindow.Toggle();
                 break;

@@ -31,12 +31,12 @@ public class MenuBar
             ImGui.PopFont();
 
             ImGui.PushStyleColor(ImGuiCol.Text, Service.CharDataManager.DisplayedChar.Job.Color);
-            if (ImGui.BeginMenu(Service.CharDataManager.DisplayedChar.Job.Name + "##JobMenu"))
+            if (ImGui.BeginMenu(Service.Localization.GetString(Service.CharDataManager.DisplayedChar.Job.Name) + "##JobMenu"))
             {
                 foreach (var job in Service.GameDataManager.Jobs)
                 {
                     ImGui.PushStyleColor(ImGuiCol.Text, job.Color);
-                    if (ImGui.MenuItem(job.Name))
+                    if (ImGui.MenuItem(Service.Localization.GetString(job.Name)))
                     {
                         Service.CharDataManager.DisplayedChar.Job = job;
                         if (Service.CharDataManager.DisplayedChar.IsInfoSet())

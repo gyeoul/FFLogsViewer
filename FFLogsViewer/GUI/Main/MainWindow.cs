@@ -1,4 +1,4 @@
-﻿using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Interface.Windowing;
 using FFLogsViewer.Manager;
 using ImGuiNET;
@@ -47,7 +47,7 @@ public class MainWindow : Window
         }
     }
 
-    public void SetErrorMessage(string message)
+    public void SetErrorMessage(string? message)
     {
         this.headerBar.ErrorMessage = message;
     }

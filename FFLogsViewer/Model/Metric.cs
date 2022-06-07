@@ -2,6 +2,6 @@
 
 public class Metric
 {
-    public string Name = null!;
+    public string? Name = null!;
     public string InternalName = null!;
 }

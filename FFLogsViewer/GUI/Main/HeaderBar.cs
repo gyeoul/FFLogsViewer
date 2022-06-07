@@ -10,7 +10,7 @@ namespace FFLogsViewer.GUI.Main;
 
 public class HeaderBar
 {
-    public string ErrorMessage = string.Empty;
+    public string? ErrorMessage = string.Empty;
     public uint ResetSizeCount;
 
     private readonly Stopwatch partyListStopwatch = new();

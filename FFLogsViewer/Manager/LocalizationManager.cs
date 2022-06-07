@@ -13,7 +13,7 @@ public class LocalizationManager
         ChineseSimplified
     }
 
-    private readonly Dictionary<Language, Dictionary<string, string>> _strings = new();
+    private readonly Dictionary<Language, Dictionary<string?, string?>> _strings = new();
 
     private readonly Language currentLanguage;
 
@@ -29,7 +29,7 @@ public class LocalizationManager
 
     public List<Language> AvailableLanguages { get; } = new();
 
-    public string GetString(string key)
+    public string? GetString(string? key)
     {
         return _strings[currentLanguage].ContainsKey(key) ? _strings[currentLanguage][key] : key;
     }
