@@ -1,28 +1,24 @@
-# FFLogsViewer
+# 安装
+1. 打开 Dalamud 设置
+2. 切到 测试版 窗口
+3. 在 自定义插件仓库 里添加该 ``https://raw.githubusercontent.com/NukoOoOoOoO/DalamudPlugins/dev/pluginmaster.json`` 链接，并且勾选启用
+4. 点击保存并关闭
+5. 在 插件安装器 安装本插件
 
-Small plugin to view FFLogs ranking percentiles in-game using Dalamud provided by [XIVLauncher](https://github.com/goatcorp/FFXIVQuickLauncher).
+# 使用
 
-To install, add `https://raw.githubusercontent.com/Aireil/MyDalamudPlugins/master/pluginmaster.json` under "Custom Plugin Repositories" in the "Experimental" tab of Dalamud's in game settings, and then install it through the plugin installer.
+```
+/fflogs - 打开查看logs的窗口
 
-/fflogs to open the plugin window.  
-/fflogsconfig to open the plugin config.
+/fflogsconfig - 打开插件配置窗口
+```
 
-The /fflogs command supports most placeholders, see the [Lodestone database](https://eu.finalfantasyxiv.com/lodestone/playguide/db/text_command/placeholder/) for a list of them.
-
-To get percentiles in the plugin window, you will need to add an API client, step-by-step guide in /fflogsconfig.  
-No API client needed to use the context menu item when opening in a browser.
-
+为了能在插件窗口上查看logs记录，你需要获取一个API Client，在插件配置窗口里可以找到教程。如果你选择了在浏览器中打开，那就不需要API client。
 ![image](https://github.com/Aireil/FFLogsViewer/raw/master/res/ui.png)
 
-## Context menu
+## 右键菜单
 
-Currently disabled in 6.1, waiting for a fix.
-
-Adds a context menu item nearly everywhere you have a name.  
-Setting in config to open the character page in your default browser instead of the plugin window.
+在每个有名字的地方都加一个右键菜单。
 
 ![image](https://github.com/Aireil/FFLogsViewer/raw/master/res/contextMenu1.png)
 ![image](https://github.com/Aireil/FFLogsViewer/raw/master/res/contextMenu2.png)
-
-## Note
-Code is a fiesta, feel free to bully me.

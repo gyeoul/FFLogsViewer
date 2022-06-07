@@ -114,7 +114,7 @@ public class MenuBar
                     ImGui.SameLine();
                     if (ImGui.Button(Service.Localization.GetString("OpenGithubRepo")))
                     {
-                        Util.OpenLink("https://github.com/Aireil/FFLogsViewer");
+                        Util.OpenLink("https://github.com/NukoOoOoOoO/FFLogsViewer");
                     }
 
                     ImGui.EndPopup();
