@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Authors>Aireil</Authors>
-    <Version>2.0.4.3</Version>
+    <Version>2.0.4.5</Version>
     <RootNamespace>FFLogsViewer</RootNamespace>
   </PropertyGroup>
 
@@ -30,10 +30,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="XivCommon" Version="4.0.0" />
+    <PackageReference Include="Dalamud.ContextMenu" Version="1.0.0" />
     <PackageReference Include="DalamudLinter" Version="1.0.3" />
-    <PackageReference Include="DalamudPackager" Version="2.1.6" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.406">
+    <PackageReference Include="DalamudPackager" Version="2.1.7" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

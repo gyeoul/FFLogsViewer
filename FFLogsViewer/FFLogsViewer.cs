@@ -1,10 +1,10 @@
+using Dalamud.ContextMenu;
 using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using FFLogsViewer.GUI.Config;
 using FFLogsViewer.GUI.Main;
 using FFLogsViewer.Manager;
-using XivCommon;
 
 namespace FFLogsViewer;
 
@@ -40,7 +40,7 @@ public sealed class FFLogsViewer : IDalamudPlugin
         this.windowSystem.AddWindow(Service.ConfigWindow);
         this.windowSystem.AddWindow(Service.MainWindow);
 
-        Service.Common = new XivCommonBase(Hooks.ContextMenu);
+        Service.ContextMenuBase = new DalamudContextMenuBase();
         this.contextMenu = new ContextMenu();
 
         Service.Interface.UiBuilder.OpenConfigUi += OpenConfigUi;
@@ -49,8 +49,9 @@ public sealed class FFLogsViewer : IDalamudPlugin
 
     public void Dispose()
     {
+        IPC.Dispose();
         Commands.Dispose();
-        Service.Common.Dispose();
+        Service.ContextMenuBase.Dispose();
         this.contextMenu.Dispose();
         Service.GameDataManager.Dispose();
 
