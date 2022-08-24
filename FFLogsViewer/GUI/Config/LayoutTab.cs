@@ -46,7 +46,7 @@ public class LayoutTab
         {
             if (!swapGroups.Any(swapGroup => swapGroup.SwapId == swapId && swapGroup.SwapNumber != swapNumber))
             {
-                ImGui.TextColored(ImGuiColors.DalamudRed, $"Swap ID \"{swapId}\" only has a single Swap #, an ID has to have different # or it will just swap with itself.");
+                ImGui.TextColored(ImGuiColors.DalamudRed, Service.Localization.GetString("Error_SwapGroupsError").Replace("{swapId}", $"{swapId}"));
             }
         }
     }
@@ -101,7 +101,11 @@ public class LayoutTab
     private static void DrawTableHeader()
     {
         var headerColor = ImGui.ColorConvertFloat4ToU32(ImGui.GetStyle().Colors[(int)ImGuiCol.TableHeaderBg]);
-        var headerNames = new[] { string.Empty, Service.Localization.GetString("Type"), Service.Localization.GetString("Alias"), Service.Localization.GetString("Expansion"), Service.Localization.GetString("Zone"), Service.Localization.GetString("Encounter"), Service.Localization.GetString("Difficulty"), "Swap ID/#", string.Empty };
+        var headerNames = new[]
+        {
+            string.Empty, Service.Localization.GetString("Type"), Service.Localization.GetString("Alias"), Service.Localization.GetString("Expansion"), Service.Localization.GetString("Zone"),
+            Service.Localization.GetString("Encounter"), Service.Localization.GetString("Difficulty"), "Swap ID/#", string.Empty
+        };
 
         foreach (var headerName in headerNames)
         {

@@ -42,8 +42,14 @@
     "Warrior": "Warrior",
     "White Mage": "White Mage",
 
+    "Standard": "Standard",
+    "Non-Standard": "Non-Standard",
+
     "Healer Combined": "Healer Combined",
     "Tank Combined": "Tank Combined",
+
+    "Clear": "Clear",
+    "Configuration": "Configuration",
 
     "MenuBar_UpdateMessage": "Update message",
     "MenuBar_UpdateMessage_Text": "Layout, style, stats, default metric, are all customizable in the settings.\n\nIf anything is broken, weird, or if you have any suggestion, do not hesitate\nto create an issue on the GitHub repo.",
@@ -100,6 +106,7 @@
     "PopupEntry_NoEncounterFound": "No encounter found for this expansion.",
     "PopupEntry_SelectAnEncounter": "Please select an encounter",
     "PopupEntry_EncounterAlreadyInLayout": "Note: this encounter is already in the layout.",
+    "PopupEntry_SwapHelpMessage": "Optional, setting a Swap ID/# group allows you to click these encounters/headers\nin the main window to dynamically change the layout.\nAll groups are reset to the lowest Swap # after a restart\nNote: Data is still fetched even if not displayed.\n\nSwap ID: ID of the Swap ID/# group.\nSwap #: Order of the swaps in the group, smallest value is the default.\n",
 
     "Stats_DefaultMetric": "Default metric",
     "Stats_DefaultMetric_Help": "Can be temporarily overridden in the main window",
@@ -140,5 +147,7 @@
     "Error_HiddenLogs": "{Name}@{World}'s logs are hidden",
     "Error_NetworkingError": "Networking error, please try again",
     "Error_CouldntGetClipboardText": "Couldn't get clipboard text",
-    "Error_NoCharacterFound": "No character found from clipboard"
+    "Error_NoCharacterFound": "No character found from clipboard",
+    "Error_SwapGroupsError": "Swap ID \"{swapId}\" only has a single Swap #, an ID has to have different # or it will just swap with itself."
+
 }

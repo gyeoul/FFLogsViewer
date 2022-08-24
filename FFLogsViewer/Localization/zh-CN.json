@@ -42,8 +42,14 @@
     "Warrior": "战士",
     "White Mage": "白魔法师",
 
+    "Standard": "标准阵容",
+    "Non-Standard": "非标准阵容",
+
     "Healer Combined": "双奶",
     "Tank Combined": "双坦",
+
+    "Clear": "清除当前查看信息",
+    "Configuration": "设置菜单",
 
     "MenuBar_UpdateMessage": "更新消息",
     "MenuBar_UpdateMessage_Text": "布局, 样式, 数据, 默认查看类型 均可在设置里进行调整.\n\n如果发现了bug, 或者有任何建议, 欢迎到Github上创建issue.",
@@ -103,6 +109,7 @@
     "PopupEntry_NoEncounterFound": "在这个大版本里没有找到副本.",
     "PopupEntry_SelectAnEncounter": "请选择副本",
     "PopupEntry_EncounterAlreadyInLayout": "注意: 该副本已经在布局设置里了.",
+    "PopupEntry_SwapHelpMessage": "可选, 设置一组 SwapId/# 能让你在点击副本名的时候自由切换显示内容\n在重开页面/获取数据后会以最低 Swap# 来显示\n注意:不会的显示的数据也会获取\n\nSwap ID: 这一组Swap的名字\nSwap #: 这一组Swap的顺序,默认显示顺序最前的\n",
 
     "Stats_DefaultMetric": "默认查看类型",
     "Stats_DefaultMetric_Help": "能在主窗口内临时被覆盖",
@@ -143,5 +150,6 @@
     "Error_HiddenLogs": "{Name}@{World} 的 logs 被隐藏了",
     "Error_NetworkingError": "网络错误,请稍后再试",
     "Error_CouldntGetClipboardText": "无法获取剪贴板内容",
-    "Error_NoCharacterFound": "在剪贴板中找不到玩家信息"
+    "Error_NoCharacterFound": "在剪贴板中找不到玩家信息",
+    "Error_SwapGroupsError": "Swap ID \"{swapId}\" 只有一个Swap #, 一个Swap Id一定要有不同的 Swap #,不然的话只会显示一种样式."
 }

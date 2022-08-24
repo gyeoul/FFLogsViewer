@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
@@ -117,14 +117,7 @@ public class PopupEntry
 
     private static void DrawEntrySwap(LayoutEntry currLayoutEntry)
     {
-        const string helpMessage =
-            "Optional, setting a Swap ID/# group allows you to click these encounters/headers\n" +
-            "in the main window to dynamically change the layout.\n" +
-            "All groups are reset to the lowest Swap # after a restart\n" +
-            "Note: Data is still fetched even if not displayed.\n" +
-            "\n" +
-            "Swap ID: ID of the Swap ID/# group.\n" +
-            "Swap #: Order of the swaps in the group, smallest value is the default.\n";
+        string helpMessage = Service.Localization.GetString("PopupEntry_SwapHelpMessage");
 
         var swapId = currLayoutEntry.SwapId;
         if (ImGui.InputText("Swap ID", ref swapId, 400))
