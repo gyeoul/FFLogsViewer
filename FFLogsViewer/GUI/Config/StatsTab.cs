@@ -13,7 +13,7 @@ public class StatsTab
     {
         var hasChanged = false;
         ImGui.SetNextItemWidth(GameDataManager.AvailableMetrics.Select(metric => ImGui.CalcTextSize(metric.Name).X).Max() + (30 * ImGuiHelpers.GlobalScale));
-        if (ImGui.BeginCombo(ervice.Localization.GetString("Stats_DefaultMetric"), Service.Configuration.Metric.Name))
+        if (ImGui.BeginCombo(Service.Localization.GetString("Stats_DefaultMetric"), Service.Configuration.Metric.Name))
         {
             foreach (var metric in GameDataManager.AvailableMetrics)
             {

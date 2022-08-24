@@ -35,7 +35,7 @@ public class MenuBar
             Util.SetHoverTooltip("Configuration");
 
             ImGui.PushStyleColor(ImGuiCol.Text, Service.MainWindow.Job.Color);
-            if (ImGui.BeginMenu(Service.Localization.GetString(Service.CharDataManager.DisplayedChar.Job.Name)))
+            if (ImGui.BeginMenu(Service.Localization.GetString(Service.MainWindow.Job.Name)))
             {
                 foreach (var job in Service.GameDataManager.Jobs)
                 {

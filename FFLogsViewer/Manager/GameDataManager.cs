@@ -34,9 +34,6 @@ public class GameDataManager : IDisposable
     public volatile bool IsDataLoading;
     public volatile bool HasFailed;
     public GameData? GameData;
-    public bool HasFailed;
-    public bool IsDataLoading;
-    public bool IsDataReady;
     public List<Job> Jobs;
     public JobIconsManager JobIconsManager;
 

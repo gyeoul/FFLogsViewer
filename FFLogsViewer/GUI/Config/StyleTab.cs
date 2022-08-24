@@ -13,7 +13,7 @@ public class StyleTab
         ImGui.Indent();
 
         var hideInCombat = Service.Configuration.HideInCombat;
-        if (ImGui.Checkbox(@"Hide in combat##HideInCombat", ref hideInCombat))
+        if (ImGui.Checkbox($@"{Service.Localization.GetString("Misc_HideInCombat")}##HideInCombat", ref hideInCombat))
         {
             Service.Configuration.HideInCombat = hideInCombat;
             hasStyleChanged = true;
@@ -95,7 +95,7 @@ public class StyleTab
         ImGui.Indent();
 
         ImGui.AlignTextToFramePadding();
-        ImGui.Text("Number of decimal digits for logs: ");
+        ImGui.Text(Service.Localization.GetString("Misc_LogDecimalDigit"));
         for (var i = 0; i <= 2; i++)
         {
             ImGui.SameLine();

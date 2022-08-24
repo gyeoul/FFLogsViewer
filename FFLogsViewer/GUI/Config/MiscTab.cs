@@ -13,24 +13,6 @@ public class MiscTab
         }
 
         var hasChanged = false;
-        ImGui.AlignTextToFramePadding();
-        ImGui.Text(Service.Localization.GetString("Misc_LogDecimalDigit"));
-        for (var i = 0; i <= 2; i++)
-        {
-            ImGui.SameLine();
-            if (ImGui.RadioButton(i + "##NbOfDecimalDigits", Service.Configuration.NbOfDecimalDigits == i))
-            {
-                Service.Configuration.NbOfDecimalDigits = i;
-                hasChanged = true;
-            }
-        }
-
-        var hideInCombat = Service.Configuration.HideInCombat;
-        if (ImGui.Checkbox($@"{Service.Localization.GetString("Misc_HideInCombat")}##HideInCombat", ref hideInCombat))
-        {
-            Service.Configuration.HideInCombat = hideInCombat;
-            hasChanged = true;
-        }
 
         var contextMenu = Service.Configuration.ContextMenu;
         if (ImGui.Checkbox($@"{Service.Localization.GetString("Misc_EnableContextMenu")}##ContextMenu", ref contextMenu))

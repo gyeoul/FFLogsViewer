@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Dalamud.Configuration;
 using FFLogsViewer.Model;
@@ -88,11 +88,11 @@ public class Configuration : IPluginConfiguration
     {
         return new List<LayoutEntry>
         {
-            new() { Type = LayoutEntryType.Header, Alias = "Abyssos", Expansion = "-", Zone = "-", Encounter = "-", Difficulty = "-", SwapId = "6.2", SwapNumber = 0 },
+            /*new() { Type = LayoutEntryType.Header, Alias = "Abyssos", Expansion = "-", Zone = "-", Encounter = "-", Difficulty = "-", SwapId = "6.2", SwapNumber = 0 },
             new() { Type = LayoutEntryType.Encounter, Expansion = "Endwalker", Zone = "Abyssos", ZoneId = 49, Encounter = "Proto-Carbuncle", EncounterId = 83, Difficulty = "Savage", DifficultyId = 101, SwapId = "6.2", SwapNumber = 0 },
             new() { Type = LayoutEntryType.Encounter, Expansion = "Endwalker", Zone = "Abyssos", ZoneId = 49, Encounter = "Hegemone", EncounterId = 84, Difficulty = "Savage", DifficultyId = 101, SwapId = "6.2", SwapNumber = 0 },
             new() { Type = LayoutEntryType.Encounter, Expansion = "Endwalker", Zone = "Abyssos", ZoneId = 49, Encounter = "Agdistis", EncounterId = 85, Difficulty = "Savage", DifficultyId = 101, SwapId = "6.2", SwapNumber = 0 },
-            new() { Type = LayoutEntryType.Encounter, Expansion = "Endwalker", Zone = "Abyssos", ZoneId = 49, Encounter = "Hephaistos", EncounterId = 86, Difficulty = "Savage", DifficultyId = 101, SwapId = "6.2", SwapNumber = 0 },
+            new() { Type = LayoutEntryType.Encounter, Expansion = "Endwalker", Zone = "Abyssos", ZoneId = 49, Encounter = "Hephaistos", EncounterId = 86, Difficulty = "Savage", DifficultyId = 101, SwapId = "6.2", SwapNumber = 0 },*/
             new() { Type = LayoutEntryType.Header, Alias = "Asphodelos", Expansion = "-", Zone = "-", Encounter = "-", Difficulty = "-", SwapId = "6.2", SwapNumber = 1 },
             new() { Type = LayoutEntryType.Encounter, Expansion = "Endwalker", Zone = "Asphodelos", ZoneId = 44, Encounter = "Erichthonios", EncounterId = 78, Difficulty = "Savage", DifficultyId = 101, SwapId = "6.2", SwapNumber = 1 },
             new() { Type = LayoutEntryType.Encounter, Expansion = "Endwalker", Zone = "Asphodelos", ZoneId = 44, Encounter = "Hippokampos", EncounterId = 79, Difficulty = "Savage", DifficultyId = 101, SwapId = "6.2", SwapNumber = 1 },

@@ -18,13 +18,13 @@ public class ContextMenu : IDisposable
 
     public static void Enable()
     {
-        Service.ContextMenu.OnOpenGameObjectContextMenu -= OnOpenContextMenu;
-        Service.ContextMenu.OnOpenGameObjectContextMenu += OnOpenContextMenu;
+        Service.ContextMenuBase.Functions.ContextMenu.OnOpenGameObjectContextMenu -= OnOpenContextMenu;
+        Service.ContextMenuBase.Functions.ContextMenu.OnOpenGameObjectContextMenu += OnOpenContextMenu;
     }
 
     public static void Disable()
     {
-        Service.ContextMenu.OnOpenGameObjectContextMenu -= OnOpenContextMenu;
+        Service.ContextMenuBase.Functions.ContextMenu.OnOpenGameObjectContextMenu -= OnOpenContextMenu;
     }
 
     public void Dispose()
@@ -73,11 +73,6 @@ public class ContextMenu : IDisposable
         }
         else
         {
-            if (!Service.MainWindow.IsOpen)
-            {
-                Service.MainWindow.ResetTemporarySettings();
-            }
-
             Service.CharDataManager.DisplayedChar.FetchTextCharacter(playerName);
             Service.MainWindow.IsOpen = true;
         }
@@ -85,7 +80,7 @@ public class ContextMenu : IDisposable
 
     private static void OnOpenContextMenu(GameObjectContextMenuOpenArgs args)
     {
-        if (!Service.Interface.UiBuilder.ShouldModifyUi || !IsMenuValid(args))
+        if (!IsMenuValid(args))
             return;
 
         if (Service.Configuration.ContextMenuStreamer)
@@ -104,7 +99,7 @@ public class ContextMenu : IDisposable
     private static void Search(GameObjectContextMenuItemSelectedArgs args)
     {
         if (!IsMenuValid(args))
-                return;
+            return;
 
         SearchPlayerFromMenu(args);
     }

@@ -13,7 +13,7 @@ public class LocalizationManager
         ChineseSimplified
     }
 
-    private readonly Dictionary<Language, Dictionary<string?, string?>> _strings = new();
+    private readonly Dictionary<Language, Dictionary<string, string?>> _strings = new();
 
     private readonly Language currentLanguage;
 
