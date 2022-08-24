@@ -1,9 +1,11 @@
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using FFLogsViewer.Model;
 using ImGuiNET;
+using Encounter = FFLogsViewer.Model.GameData.Encounter;
 
 namespace FFLogsViewer.GUI.Config;
 
@@ -17,8 +19,10 @@ public class PopupEntry
 
     private LayoutEntry AddLayoutEntry { get; set; } = LayoutEntry.CreateEncounter();
     private LayoutEntry EditLayoutEntry { get; set; } = null!;
+    private List<Encounter> AllEncounters { get; set; } = null!;
 
-    public int EditingIndex;
+    public int SelectedIndex;
+    private const string AllEncountersPlaceholder = "All encounters##AllCheck";
     private Mode mode = Mode.Adding;
     private bool hasDeleted;
 
@@ -30,7 +34,7 @@ public class PopupEntry
         }
         else if (this.mode == Mode.Editing)
         {
-            this.EditLayoutEntry = (LayoutEntry)Service.Configuration.Layout[this.EditingIndex].Clone();
+            this.EditLayoutEntry = (LayoutEntry)Service.Configuration.Layout[this.SelectedIndex].Clone();
         }
 
         ImGui.OpenPopup("##PopupEntry");
@@ -111,6 +115,44 @@ public class PopupEntry
         }
     }
 
+    private static void DrawEntrySwap(LayoutEntry currLayoutEntry)
+    {
+        const string helpMessage =
+            "Optional, setting a Swap ID/# group allows you to click these encounters/headers\n" +
+            "in the main window to dynamically change the layout.\n" +
+            "All groups are reset to the lowest Swap # after a restart\n" +
+            "Note: Data is still fetched even if not displayed.\n" +
+            "\n" +
+            "Swap ID: ID of the Swap ID/# group.\n" +
+            "Swap #: Order of the swaps in the group, smallest value is the default.\n";
+
+        var swapId = currLayoutEntry.SwapId;
+        if (ImGui.InputText("Swap ID", ref swapId, 400))
+        {
+            currLayoutEntry.SwapId = swapId;
+        }
+
+        Util.DrawHelp(helpMessage);
+
+        if (currLayoutEntry.SwapId == string.Empty)
+        {
+            ImGui.BeginDisabled();
+        }
+
+        var swapNumber = currLayoutEntry.SwapNumber;
+        if (ImGui.InputInt("Swap #", ref swapNumber))
+        {
+            currLayoutEntry.SwapNumber = swapNumber;
+        }
+
+        if (currLayoutEntry.SwapId == string.Empty)
+        {
+            ImGui.EndDisabled();
+        }
+
+        Util.DrawHelp(helpMessage);
+    }
+
     private void DrawEntryEncounter(LayoutEntry currLayoutEntry)
     {
         var expansions = Service.GameDataManager.GameData!.Data!.WorldData!.Expansions!;
@@ -118,17 +160,16 @@ public class PopupEntry
         {
             for (var i = 0; i < expansions.Count; i++)
             {
-                ImGui.PushID(i);
-                if (ImGui.Selectable(expansions[i].Name))
+                if (ImGui.Selectable($"{expansions[i].Name}##{i}"))
                 {
                     currLayoutEntry.Expansion = expansions[i].Name!;
                     currLayoutEntry.Zone = "-";
                     currLayoutEntry.ZoneId = 0;
                     currLayoutEntry.Encounter = "-";
                     currLayoutEntry.EncounterId = 0;
+                    currLayoutEntry.Difficulty = "-";
+                    currLayoutEntry.DifficultyId = 0;
                 }
-
-                ImGui.PopID();
             }
 
             ImGui.EndCombo();
@@ -141,16 +182,15 @@ public class PopupEntry
             {
                 for (var i = 0; i < zones.Count; i++)
                 {
-                    ImGui.PushID(i);
-                    if (ImGui.Selectable(zones[i].Name))
+                    if (ImGui.Selectable($"{zones[i].Name}##{i}"))
                     {
                         currLayoutEntry.Zone = zones[i].Name!;
                         currLayoutEntry.ZoneId = zones[i].Id!.Value;
                         currLayoutEntry.Encounter = "-";
                         currLayoutEntry.EncounterId = 0;
+                        currLayoutEntry.Difficulty = "-";
+                        currLayoutEntry.DifficultyId = 0;
                     }
-
-                    ImGui.PopID();
                 }
             }
             else
@@ -166,16 +206,24 @@ public class PopupEntry
         {
             if (encounters is { Count: > 0 })
             {
+                if (this.mode == Mode.Adding && encounters.Count > 1)
+                {
+                    if (ImGui.Selectable($"All encounters in {currLayoutEntry.Zone}"))
+                    {
+                        currLayoutEntry.Encounter = AllEncountersPlaceholder;
+                        this.AllEncounters = encounters;
+                    }
+
+                    ImGui.Separator();
+                }
+
                 for (var i = 0; i < encounters.Count; i++)
                 {
-                    ImGui.PushID(i);
-                    if (ImGui.Selectable(encounters[i].Name))
+                    if (ImGui.Selectable($"{encounters[i].Name}##{i}"))
                     {
                         currLayoutEntry.Encounter = encounters[i].Name!;
                         currLayoutEntry.EncounterId = encounters[i].Id!.Value;
                     }
-
-                    ImGui.PopID();
                 }
             }
             else
@@ -200,14 +248,11 @@ public class PopupEntry
                 {
                     for (var i = 0; i < difficulties.Count; i++)
                     {
-                        ImGui.PushID(i);
-                        if (ImGui.Selectable(difficulties[i].Name))
+                        if (ImGui.Selectable($"{difficulties[i].Name}##{i}"))
                         {
                             currLayoutEntry.Difficulty = difficulties[i].Name!;
                             currLayoutEntry.DifficultyId = difficulties[i].Id!.Value;
                         }
-
-                        ImGui.PopID();
                     }
 
                     ImGui.EndCombo();
@@ -215,31 +260,63 @@ public class PopupEntry
             }
         }
 
-        var isButtonDisabled = !currLayoutEntry.IsEncounterValid();
-        if (Util.DrawDisabledButton(this.mode == Mode.Adding ? Service.Localization.GetString("Add") : Service.Localization.GetString("Edit"), isButtonDisabled)
-            && !isButtonDisabled)
+        DrawEntrySwap(currLayoutEntry);
+
+        if (!currLayoutEntry.IsEncounterValid())
+        {
+            ImGui.BeginDisabled();
+        }
+
+        if (ImGui.Button(this.mode == Mode.Adding ? Service.Localization.GetString("Add") : Service.Localization.GetString("Edit")))
         {
             if (this.mode == Mode.Adding)
             {
-                Service.Configuration.Layout.Add((LayoutEntry)currLayoutEntry.Clone());
+                var newEntries = new List<LayoutEntry>();
+                if (currLayoutEntry.Encounter == AllEncountersPlaceholder)
+                {
+                    foreach (var encounter in this.AllEncounters)
+                    {
+                        var entry = (LayoutEntry)currLayoutEntry.Clone();
+                        entry.Encounter = encounter.Name!;
+                        entry.EncounterId = encounter.Id!.Value;
+                        newEntries.Add(entry);
+                    }
+                }
+                else
+                {
+                    newEntries.Add((LayoutEntry)currLayoutEntry.Clone());
+                }
+
+                if (this.SelectedIndex >= 0)
+                {
+                    Service.Configuration.Layout.InsertRange(this.SelectedIndex, newEntries);
+                }
+                else
+                {
+                    Service.Configuration.Layout.AddRange(newEntries);
+                }
+
                 Service.Configuration.IsDefaultLayout = false;
                 Service.Configuration.Save();
+                Service.MainWindow.ResetSwapGroups();
             }
             else
             {
-                if (!Service.Configuration.Layout[this.EditingIndex].Compare(currLayoutEntry))
+                if (!Service.Configuration.Layout[this.SelectedIndex].Compare(currLayoutEntry))
                 {
-                    Service.Configuration.Layout[this.EditingIndex] = currLayoutEntry;
+                    Service.Configuration.Layout[this.SelectedIndex] = currLayoutEntry;
                     Service.Configuration.IsDefaultLayout = false;
                     Service.Configuration.Save();
+                    Service.MainWindow.ResetSwapGroups();
                 }
             }
 
             ImGui.CloseCurrentPopup();
         }
 
-        if (isButtonDisabled)
+        if (!currLayoutEntry.IsEncounterValid())
         {
+            ImGui.EndDisabled();
             ImGui.SameLine();
             ImGui.TextColored(ImGuiColors.DalamudGrey, Service.Localization.GetString("PopupEntry_SelectAnEncounter"));
         }
@@ -248,7 +325,8 @@ public class PopupEntry
                                                                              currLayoutEntry.Type == layoutEntry.Type &&
                                                                              currLayoutEntry.Expansion == layoutEntry.Expansion &&
                                                                              currLayoutEntry.Zone == layoutEntry.Zone &&
-                                                                             currLayoutEntry.Encounter == layoutEntry.Encounter))
+                                                                             currLayoutEntry.Encounter == layoutEntry.Encounter &&
+                                                                             currLayoutEntry.Difficulty == layoutEntry.Difficulty))
         {
             ImGui.SameLine();
             ImGui.Text(Service.Localization.GetString("PopupEntry_EncounterAlreadyInLayout"));
@@ -262,23 +340,35 @@ public class PopupEntry
 
     private void DrawEntryHeader(LayoutEntry currLayoutEntry)
     {
+        DrawEntrySwap(currLayoutEntry);
+
         if (ImGui.Button(this.mode == Mode.Adding ? Service.Localization.GetString("Add") : Service.Localization.GetString("Edit")))
         {
             var newLayoutEntry = currLayoutEntry.CloneHeader();
 
             if (this.mode == Mode.Adding)
             {
-                Service.Configuration.Layout.Add(newLayoutEntry);
+                if (this.SelectedIndex >= 0)
+                {
+                    Service.Configuration.Layout.Insert(this.SelectedIndex, newLayoutEntry);
+                }
+                else
+                {
+                    Service.Configuration.Layout.Add(newLayoutEntry);
+                }
+
                 Service.Configuration.IsDefaultLayout = false;
                 Service.Configuration.Save();
+                Service.MainWindow.ResetSwapGroups();
             }
             else
             {
-                if (!Service.Configuration.Layout[this.EditingIndex].Compare(newLayoutEntry))
+                if (!Service.Configuration.Layout[this.SelectedIndex].Compare(newLayoutEntry))
                 {
-                    Service.Configuration.Layout[this.EditingIndex] = newLayoutEntry;
+                    Service.Configuration.Layout[this.SelectedIndex] = newLayoutEntry;
                     Service.Configuration.IsDefaultLayout = false;
                     Service.Configuration.Save();
+                    Service.MainWindow.ResetSwapGroups();
                 }
             }
 
@@ -303,9 +393,10 @@ public class PopupEntry
         {
             if (Util.DrawButtonIcon(FontAwesomeIcon.Trash, new Vector2(2, ImGui.GetStyle().FramePadding.Y)))
             {
-                Service.Configuration.Layout.RemoveAt(this.EditingIndex);
+                Service.Configuration.Layout.RemoveAt(this.SelectedIndex);
                 Service.Configuration.IsDefaultLayout = false;
                 Service.Configuration.Save();
+                Service.MainWindow.ResetSwapGroups();
 
                 this.hasDeleted = true;
                 ImGui.CloseCurrentPopup();

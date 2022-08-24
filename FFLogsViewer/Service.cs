@@ -25,8 +25,8 @@ internal class Service
     internal static CharDataManager CharDataManager { get; set; } = null!;
     internal static PartyListManager PartyListManager { get; set; } = null!;
     internal static FFLogsClient FfLogsClient { get; set; } = null!;
-    internal static DalamudContextMenuBase ContextMenuBase { get; set; } = null!;
     internal static LocalizationManager Localization { get; set; } = null!;
+    internal static DalamudContextMenu ContextMenu { get; set; } = null!;
 
     [PluginService]
     internal static DalamudPluginInterface Interface { get; private set; } = null!;

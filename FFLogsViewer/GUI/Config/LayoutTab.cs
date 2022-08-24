@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
@@ -9,7 +10,7 @@ namespace FFLogsViewer.GUI.Config;
 public class LayoutTab
 {
     private readonly PopupEntry popupEntry;
-    private bool isEditButtonPressed;
+    private bool shouldPopupOpen;
 
     public LayoutTab()
     {
@@ -18,7 +19,42 @@ public class LayoutTab
 
     public void Draw()
     {
+        DrawAutoUpdate();
+        this.DrawLayoutTable();
+        DrawSwapGroupsError();
+        this.DrawFooter();
+
+        // Needed because popups do not open in tables
+        if (this.shouldPopupOpen)
+        {
+            this.shouldPopupOpen = false;
+            this.popupEntry.Open();
+        }
+
+        this.popupEntry.Draw();
+    }
+
+    private static void DrawSwapGroupsError()
+    {
+        var swapGroups = Service.Configuration.Layout
+                                                    .Where(entry => entry.SwapId != string.Empty)
+                                                    .Select(entry => (entry.SwapId, entry.SwapNumber))
+                                                    .Distinct()
+                                                    .ToArray();
+
+        foreach (var (swapId, swapNumber) in swapGroups)
+        {
+            if (!swapGroups.Any(swapGroup => swapGroup.SwapId == swapId && swapGroup.SwapNumber != swapNumber))
+            {
+                ImGui.TextColored(ImGuiColors.DalamudRed, $"Swap ID \"{swapId}\" only has a single Swap #, an ID has to have different # or it will just swap with itself.");
+            }
+        }
+    }
+
+    private static void DrawAutoUpdate()
+    {
         ImGui.Text(Service.Localization.GetString("Layout_AutoUpdateLayout"));
+
         ImGui.SameLine();
         if (Service.Configuration.IsDefaultLayout)
         {
@@ -47,6 +83,7 @@ public class LayoutTab
                     Service.Configuration.IsDefaultLayout = true;
                     Service.Configuration.Save();
                     Service.MainWindow.ResetSize();
+                    Service.MainWindow.ResetSwapGroups();
                     ImGui.CloseCurrentPopup();
                 }
 
@@ -59,23 +96,32 @@ public class LayoutTab
                 ImGui.EndPopup();
             }
         }
+    }
 
+    private static void DrawTableHeader()
+    {
+        var headerColor = ImGui.ColorConvertFloat4ToU32(ImGui.GetStyle().Colors[(int)ImGuiCol.TableHeaderBg]);
+        var headerNames = new[] { string.Empty, Service.Localization.GetString("Type"), Service.Localization.GetString("Alias"), Service.Localization.GetString("Expansion"), Service.Localization.GetString("Zone"), Service.Localization.GetString("Encounter"), Service.Localization.GetString("Difficulty"), "Swap ID/#", string.Empty };
+
+        foreach (var headerName in headerNames)
+        {
+            ImGui.TableNextColumn();
+            Util.CenterText(headerName);
+            ImGui.TableSetBgColor(ImGuiTableBgTarget.CellBg, headerColor);
+        }
+    }
+
+    private void DrawLayoutTable()
+    {
         if (ImGui.BeginTable(
                 "##ConfigLayoutTable",
-                8,
+                9,
                 ImGuiTableFlags.Borders | ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.ScrollY,
                 new Vector2(-1, 350)))
         {
             ImGui.TableSetupScrollFreeze(0, 1);
-            ImGui.TableSetupColumn("##PositionCol", ImGuiTableColumnFlags.WidthFixed, 38 * ImGuiHelpers.GlobalScale);
-            ImGui.TableSetupColumn(Service.Localization.GetString("Type"));
-            ImGui.TableSetupColumn(Service.Localization.GetString("Alias"));
-            ImGui.TableSetupColumn(Service.Localization.GetString("Expansion"));
-            ImGui.TableSetupColumn(Service.Localization.GetString("Zone"));
-            ImGui.TableSetupColumn(Service.Localization.GetString("Encounter"));
-            ImGui.TableSetupColumn(Service.Localization.GetString("Difficulty"));
-            ImGui.TableSetupColumn("##EditCol", ImGuiTableColumnFlags.WidthFixed, 20 * ImGuiHelpers.GlobalScale);
-            ImGui.TableHeadersRow();
+
+            DrawTableHeader();
 
             for (var i = 0; i < Service.Configuration.Layout.Count; i++)
             {
@@ -123,30 +169,54 @@ public class LayoutTab
                 ImGui.Text(layoutEntry.Difficulty);
 
                 ImGui.TableNextColumn();
-                if (Util.DrawButtonIcon(FontAwesomeIcon.Edit, new Vector2(2, ImGui.GetStyle().FramePadding.Y)))
+                ImGui.Text(layoutEntry.SwapId == string.Empty ? string.Empty : $"{layoutEntry.SwapId}/{layoutEntry.SwapNumber}");
+
+                ImGui.TableNextColumn();
+                if (Util.DrawButtonIcon(FontAwesomeIcon.Edit))
                 {
-                    this.popupEntry.EditingIndex = i;
+                    this.popupEntry.SelectedIndex = i;
                     this.popupEntry.SwitchMode(PopupEntry.Mode.Editing);
-                    this.isEditButtonPressed = true;
+                    this.shouldPopupOpen = true;
                 }
+
+                Util.SetHoverTooltip("Edit");
+
+                ImGui.SameLine();
+                ImGui.SetCursorPosX(ImGui.GetCursorPosX() - ImGui.GetStyle().ItemSpacing.X + 2);
+                if (Util.DrawButtonIcon(FontAwesomeIcon.Plus))
+                {
+                    this.popupEntry.SelectedIndex = i + 1;
+                    this.popupEntry.SwitchMode(PopupEntry.Mode.Adding);
+                    this.shouldPopupOpen = true;
+                }
+
+                Util.SetHoverTooltip("Add below");
 
                 ImGui.PopID();
             }
 
             ImGui.EndTable();
         }
+    }
 
-        if (Util.DrawButtonIcon(FontAwesomeIcon.Plus, new Vector2(2, ImGui.GetStyle().FramePadding.Y)))
+    private void DrawFooter()
+    {
+        if (Util.DrawButtonIcon(FontAwesomeIcon.Plus))
         {
+            this.popupEntry.SelectedIndex = -1;
             this.popupEntry.SwitchMode(PopupEntry.Mode.Adding);
             this.popupEntry.Open();
         }
 
+        Util.SetHoverTooltip("Add");
+
         ImGui.SameLine();
-        if (Util.DrawButtonIcon(FontAwesomeIcon.Trash, new Vector2(2, ImGui.GetStyle().FramePadding.Y)))
+        if (Util.DrawButtonIcon(FontAwesomeIcon.Trash))
         {
             ImGui.OpenPopup("##DeleteLayout");
         }
+
+        Util.SetHoverTooltip("Delete all");
 
         if (ImGui.BeginPopup("##DeleteLayout", ImGuiWindowFlags.NoMove))
         {
@@ -158,6 +228,7 @@ public class LayoutTab
                 Service.Configuration.IsDefaultLayout = false;
                 Service.Configuration.Save();
                 Service.MainWindow.ResetSize();
+                Service.MainWindow.ResetSwapGroups();
                 ImGui.CloseCurrentPopup();
             }
 
@@ -170,13 +241,29 @@ public class LayoutTab
             ImGui.EndPopup();
         }
 
-        // Needed because popups do not open in tables
-        if (this.isEditButtonPressed)
+        if (!Service.FfLogsClient.IsTokenValid)
         {
-            this.isEditButtonPressed = false;
-            this.popupEntry.Open();
+            ImGui.Text("API client is not valid, points information unavailable.");
         }
+        else
+        {
+            if (Service.FfLogsClient.LimitPerHour <= 0)
+            {
+                Service.FfLogsClient.RefreshRateLimitData();
+            }
 
-        this.popupEntry.Draw();
+            var pointsPerRequest = FFLogsClient.EstimateCurrentLayoutPoints();
+
+            ImGui.SameLine();
+            ImGui.Text($"Possible requests per hour: {(Service.FfLogsClient.LimitPerHour > 0 ? Service.FfLogsClient.LimitPerHour / pointsPerRequest : "Loading...")}");
+            Util.DrawHelp(
+                $"Points per hour: {(Service.FfLogsClient.LimitPerHour > 0 ? Service.FfLogsClient.LimitPerHour : "Loading...")}\n" +
+                "Points are used by the FF Logs API every time you make a request.\n" +
+                "This limit can be increased by subscribing to the FF Logs Patreon.\n" +
+                "If you are subscribed, make sure to create the API client on that account.\n" +
+                "\n" +
+                $"Points used per request: {pointsPerRequest}\n" +
+                "Every distinctive zone-difficulty pairs in the layout use some points.");
+        }
     }
 }

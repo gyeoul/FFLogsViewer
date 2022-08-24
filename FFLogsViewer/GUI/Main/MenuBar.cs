@@ -15,7 +15,6 @@ public class MenuBar
         if (ImGui.BeginMenuBar())
         {
             ImGui.PushFont(UiBuilder.IconFont);
-
             if (ImGui.MenuItem(FontAwesomeIcon.Eraser.ToIconString()))
             {
                 Service.CharDataManager.ResetDisplayedChar();
@@ -23,22 +22,27 @@ public class MenuBar
                 Service.MainWindow.ResetSize();
             }
 
+            ImGui.PopFont();
+            Util.SetHoverTooltip("Clear");
+
+            ImGui.PushFont(UiBuilder.IconFont);
             if (ImGui.MenuItem(FontAwesomeIcon.Cog.ToIconString()))
             {
                 Service.ConfigWindow.Toggle();
             }
 
             ImGui.PopFont();
+            Util.SetHoverTooltip("Configuration");
 
-            ImGui.PushStyleColor(ImGuiCol.Text, Service.CharDataManager.DisplayedChar.Job.Color);
-            if (ImGui.BeginMenu(Service.Localization.GetString(Service.CharDataManager.DisplayedChar.Job.Name) + "##JobMenu"))
+            ImGui.PushStyleColor(ImGuiCol.Text, Service.MainWindow.Job.Color);
+            if (ImGui.BeginMenu(Service.Localization.GetString(Service.CharDataManager.DisplayedChar.Job.Name)))
             {
                 foreach (var job in Service.GameDataManager.Jobs)
                 {
                     ImGui.PushStyleColor(ImGuiCol.Text, job.Color);
                     if (ImGui.MenuItem(Service.Localization.GetString(job.Name)))
                     {
-                        Service.CharDataManager.DisplayedChar.Job = job;
+                        Service.MainWindow.Job = job;
                         if (Service.CharDataManager.DisplayedChar.IsInfoSet())
                         {
                             Service.CharDataManager.DisplayedChar.FetchData();
@@ -53,15 +57,15 @@ public class MenuBar
 
             ImGui.PopStyleColor();
 
-            if (ImGui.BeginMenu(Service.CharDataManager.DisplayedChar.OverriddenMetric != null
-                                    ? Service.CharDataManager.DisplayedChar.OverriddenMetric.Name
+            if (ImGui.BeginMenu(Service.MainWindow.OverriddenMetric != null
+                                    ? Service.MainWindow.OverriddenMetric.Name
                                     : Service.Configuration.Metric.Name))
             {
                 foreach (var metric in GameDataManager.AvailableMetrics)
                 {
                     if (ImGui.MenuItem(metric.Name))
                     {
-                        Service.CharDataManager.DisplayedChar.OverriddenMetric = metric;
+                        Service.MainWindow.OverriddenMetric = metric;
                         if (Service.CharDataManager.DisplayedChar.IsInfoSet())
                         {
                             Service.CharDataManager.DisplayedChar.FetchData();
@@ -72,7 +76,24 @@ public class MenuBar
                 ImGui.EndMenu();
             }
 
-            if (!Service.Configuration.IsUpdateDismissed)
+            if (ImGui.BeginMenu(Service.MainWindow.Partition.Name))
+            {
+                foreach (var partition in GameDataManager.AvailablePartitions)
+                {
+                    if (ImGui.MenuItem(partition.Name))
+                    {
+                        Service.MainWindow.Partition = partition;
+                        if (Service.CharDataManager.DisplayedChar.IsInfoSet())
+                        {
+                            Service.CharDataManager.DisplayedChar.FetchData();
+                        }
+                    }
+                }
+
+                ImGui.EndMenu();
+            }
+
+            if (!Service.Configuration.IsUpdateDismissed2060)
             {
                 var isButtonHidden = !ImGui.IsPopupOpen("##UpdateMessage") && DateTime.Now.Second % 2 == 0;
                 if (isButtonHidden)
@@ -95,7 +116,7 @@ public class MenuBar
                     ImGui.PopStyleColor();
                 }
 
-                if (!Service.Configuration.IsUpdateDismissed)
+                if (!Service.Configuration.IsUpdateDismissed2060)
                 {
                     Util.SetHoverTooltip("Update message");
                 }
@@ -106,7 +127,7 @@ public class MenuBar
 
                     if (ImGui.Button($"{Service.Localization.GetString("Dismiss")}##UpdateMessage"))
                     {
-                        Service.Configuration.IsUpdateDismissed = true;
+                        Service.Configuration.IsUpdateDismissed2060 = true;
                         Service.Configuration.Save();
                         ImGui.CloseCurrentPopup();
                     }

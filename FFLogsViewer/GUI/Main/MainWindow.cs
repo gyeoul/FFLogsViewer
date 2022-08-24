@@ -1,13 +1,19 @@
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Interface.Windowing;
 using FFLogsViewer.Manager;
+using FFLogsViewer.Model;
 using ImGuiNET;
 
 namespace FFLogsViewer.GUI.Main;
 
 public class MainWindow : Window
 {
+    public Job Job = GameDataManager.GetDefaultJob();
+    public Partition Partition = GameDataManager.GetDefaultPartition();
+    public Metric? OverriddenMetric;
+
     private readonly HeaderBar headerBar = new();
+    private readonly Table table = new();
 
     public MainWindow()
         : base("FFLogsViewer##FFLogsViewerMainWindow")
@@ -31,8 +37,7 @@ public class MainWindow : Window
 
     public override void OnOpen()
     {
-        Service.CharDataManager.DisplayedChar.Job = GameDataManager.GetDefaultJob();
-        Service.CharDataManager.DisplayedChar.OverriddenMetric = null;
+        this.ResetTemporarySettings();
     }
 
     public override void Draw()
@@ -43,7 +48,7 @@ public class MainWindow : Window
 
         if (Service.CharDataManager.DisplayedChar.IsDataReady)
         {
-            Table.Draw();
+            this.table.Draw();
         }
     }
 
@@ -59,5 +64,17 @@ public class MainWindow : Window
         {
             this.headerBar.ResetSizeCount = 5;
         }
+    }
+
+    public void ResetTemporarySettings()
+    {
+        this.Job = GameDataManager.GetDefaultJob();
+        this.OverriddenMetric = null;
+        this.Partition = GameDataManager.GetDefaultPartition();
+    }
+
+    public void ResetSwapGroups()
+    {
+        this.table.ResetSwapGroups();
     }
 }

@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Interface.Colors;
@@ -9,7 +10,9 @@ namespace FFLogsViewer.GUI.Main;
 
 public class Table
 {
-    public static void Draw()
+    private Dictionary<string, int> currSwaps = new();
+
+    public void Draw()
     {
         var enabledStats = Service.Configuration.Stats.Where(stat => stat.IsEnabled).ToList();
         if (ImGui.BeginTable(
@@ -17,7 +20,10 @@ public class Table
                     enabledStats.Count + 1,
                     Service.Configuration.Style.MainTableFlags))
         {
-            for (var i = 0; i < Service.Configuration.Layout.Count; i++)
+            var displayedEntries = Service.Configuration.Layout.Where(entry => entry.SwapId == string.Empty
+                                                                                                || (this.currSwaps.ContainsKey(entry.SwapId) && this.currSwaps[entry.SwapId] == entry.SwapNumber)
+                                                                                                || (!this.currSwaps.ContainsKey(entry.SwapId) && this.AddSwapIfDefault(entry.SwapId, entry.SwapNumber))).ToList();
+            for (var i = 0; i < displayedEntries.Count; i++)
             {
                 if (i != 0)
                 {
@@ -26,7 +32,7 @@ public class Table
 
                 ImGui.TableNextColumn();
 
-                var entry = Service.Configuration.Layout[i];
+                var entry = displayedEntries[i];
 
                 if (entry.Type == LayoutEntryType.Header)
                 {
@@ -37,13 +43,29 @@ public class Table
                         separatorCursorY = ImGui.GetCursorPosY();
                     }
 
-                    ImGui.TextUnformatted(entry.Alias);
+                    if (entry.SwapId == string.Empty)
+                    {
+                        ImGui.TextUnformatted(entry.Alias);
+                    }
+                    else
+                    {
+                        if (ImGui.Selectable($"{entry.Alias}##{i}"))
+                        {
+                            this.Swap(entry.SwapId, entry.SwapNumber);
+                        }
+                    }
+
+                    if (Service.Configuration.Style.IsHeaderSeparatorDrawn)
+                    {
+                        ImGui.Separator();
+                    }
 
                     foreach (var stat in enabledStats)
                     {
                         ImGui.TableNextColumn();
                         if (Service.Configuration.Style.IsHeaderSeparatorDrawn)
                         {
+                            ImGui.Separator();
                             ImGui.SetCursorPosY(separatorCursorY);
                         }
 
@@ -61,11 +83,11 @@ public class Table
                         {
                             Util.CenterText(stat.Alias != string.Empty ? stat.Alias : stat.Name);
                         }
-                    }
 
-                    if (Service.Configuration.Style.IsHeaderSeparatorDrawn)
-                    {
-                        ImGui.Separator();
+                        if (Service.Configuration.Style.IsHeaderSeparatorDrawn)
+                        {
+                            ImGui.Separator();
+                        }
                     }
                 }
                 else if (entry.Type == LayoutEntryType.Encounter)
@@ -74,20 +96,21 @@ public class Table
                         Service.CharDataManager.DisplayedChar.Encounters.FirstOrDefault(
                             enc => enc.Id == entry.EncounterId && enc.Difficulty == entry.DifficultyId);
 
-                    // for invalid metric
-                    encounter ??= Service.CharDataManager.DisplayedChar.Encounters.FirstOrDefault(
-                                    enc => enc.ZoneId == entry.ZoneId);
+                    var isValid = Service.CharDataManager.DisplayedChar.Encounters.FirstOrDefault(
+                                    enc => enc.ZoneId == entry.ZoneId)?.IsValid;
 
                     var encounterName = entry.Alias != string.Empty ? entry.Alias : entry.Encounter;
                     if (encounter == null)
                     {
                         ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudGrey);
-                        encounterName += " (N/A)";
-                    }
-                    else if (encounter is { IsMetricValid: false })
-                    {
-                        ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudGrey);
-                        encounterName += " (NS)";
+                        if (isValid != null && !isValid.Value)
+                        {
+                            encounterName += " (NS)";
+                        }
+                        else
+                        {
+                            encounterName += " (N/A)";
+                        }
                     }
                     else if (encounter is { IsLockedIn: false })
                     {
@@ -95,17 +118,33 @@ public class Table
                         encounterName += " (NL)";
                     }
 
-                    ImGui.Text(encounterName);
+                    if (entry.SwapId == string.Empty)
+                    {
+                        ImGui.TextUnformatted(encounterName);
+                    }
+                    else
+                    {
+                        if (ImGui.Selectable($"{encounterName}##{i}"))
+                        {
+                            this.Swap(entry.SwapId, entry.SwapNumber);
+                        }
+                    }
 
                     if (encounter == null)
                     {
                         ImGui.PopStyleColor();
-                        Util.SetHoverTooltip(Service.Localization.GetString("Main_DataNotAvailable"));
-                    }
-                    else if (encounter is { IsMetricValid: false })
-                    {
-                        ImGui.PopStyleColor();
-                        Util.SetHoverTooltip(Service.Localization.GetString("Main_NotSupportedMetricWarning"));
+
+                        if (isValid != null && !isValid.Value)
+                        {
+                            Util.SetHoverTooltip(Service.Localization.GetString("Main_NotSupportedMetricWarning"));
+                        }
+                        else
+                        {
+                            Util.SetHoverTooltip("No data available.\n" +
+                                                 "\n" +
+                                                 "This error is expected when the encounter is a recent addition to the layout or not yet listed on FF Logs.\n" +
+                                                 "If neither of these is the case, please try adding the encounter again.");
+                        }
                     }
                     else if (encounter is { IsLockedIn: false })
                     {
@@ -166,7 +205,7 @@ public class Table
                                 break;
                         }
 
-                        text ??= encounter is null or { IsMetricValid: false } ? "?" : "-";
+                        text ??= encounter is null or { IsValid: false } ? "?" : "-";
                         color ??= new Vector4(1, 1, 1, 1);
 
                         Util.CenterTextColored(color.Value, text);
@@ -176,5 +215,50 @@ public class Table
 
             ImGui.EndTable();
         }
+    }
+
+    public void ResetSwapGroups()
+    {
+        this.currSwaps = new Dictionary<string, int>();
+    }
+
+    private static bool IsDefaultSwap(string swapId, int swapNumber)
+    {
+        return !Service.Configuration.Layout.Exists(entry => entry.SwapId == swapId && entry.SwapNumber < swapNumber);
+    }
+
+    private static bool IsFinaleSwap(string swapId, int swapNumber)
+    {
+        return !Service.Configuration.Layout.Exists(entry => entry.SwapId == swapId && entry.SwapNumber > swapNumber);
+    }
+
+    private bool AddSwapIfDefault(string swapId, int swapNumber)
+    {
+        if (IsDefaultSwap(swapId, swapNumber))
+        {
+            this.currSwaps[swapId] = swapNumber;
+            return true;
+        }
+
+        return false;
+    }
+
+    private void Swap(string swapId, int swapNumber)
+    {
+        int newSwapNumber;
+        if (IsFinaleSwap(swapId, swapNumber))
+        {
+            newSwapNumber = Service.Configuration.Layout.First(entry => entry.SwapId == swapId && IsDefaultSwap(swapId, entry.SwapNumber)).SwapNumber;
+        }
+        else
+        {
+            newSwapNumber = Service.Configuration.Layout
+                                   .Where(entry => entry.SwapId == swapId && entry.SwapNumber > swapNumber)
+                                   .Select(entry => entry.SwapNumber)
+                                   .Distinct()
+                                   .OrderBy(groupNumber => Math.Abs(swapNumber - groupNumber)).First();
+        }
+
+        this.currSwaps[swapId] = newSwapNumber;
     }
 }

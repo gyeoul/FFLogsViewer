@@ -18,13 +18,13 @@ public class ContextMenu : IDisposable
 
     public static void Enable()
     {
-        Service.ContextMenuBase.Functions.ContextMenu.OnOpenGameObjectContextMenu -= OnOpenContextMenu;
-        Service.ContextMenuBase.Functions.ContextMenu.OnOpenGameObjectContextMenu += OnOpenContextMenu;
+        Service.ContextMenu.OnOpenGameObjectContextMenu -= OnOpenContextMenu;
+        Service.ContextMenu.OnOpenGameObjectContextMenu += OnOpenContextMenu;
     }
 
     public static void Disable()
     {
-        Service.ContextMenuBase.Functions.ContextMenu.OnOpenGameObjectContextMenu -= OnOpenContextMenu;
+        Service.ContextMenu.OnOpenGameObjectContextMenu -= OnOpenContextMenu;
     }
 
     public void Dispose()
@@ -73,6 +73,11 @@ public class ContextMenu : IDisposable
         }
         else
         {
+            if (!Service.MainWindow.IsOpen)
+            {
+                Service.MainWindow.ResetTemporarySettings();
+            }
+
             Service.CharDataManager.DisplayedChar.FetchTextCharacter(playerName);
             Service.MainWindow.IsOpen = true;
         }
@@ -80,7 +85,7 @@ public class ContextMenu : IDisposable
 
     private static void OnOpenContextMenu(GameObjectContextMenuOpenArgs args)
     {
-        if (!IsMenuValid(args))
+        if (!Service.Interface.UiBuilder.ShouldModifyUi || !IsMenuValid(args))
             return;
 
         if (Service.Configuration.ContextMenuStreamer)

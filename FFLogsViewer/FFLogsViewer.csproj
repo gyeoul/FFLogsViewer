@@ -2,12 +2,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Authors>Aireil</Authors>
-    <Version>2.0.4.5-hc2</Version>
+    <Version>2.0.6.1</Version>
     <RootNamespace>FFLogsViewer</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetFramework>net5.0-windows</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <Platforms>x64</Platforms>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
@@ -26,13 +26,12 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
+    <DalamudLibPath>D:\XIVLauncherCN\Roaming\addon\Hooks\dev\</DalamudLibPath>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dalamud.ContextMenu" Version="1.0.0" />
-    <PackageReference Include="DalamudLinter" Version="1.0.3" />
-    <PackageReference Include="DalamudPackager" Version="2.1.7" />
+    <PackageReference Include="Dalamud.ContextMenu" Version="1.2.1" />
+    <PackageReference Include="DalamudPackager" Version="2.1.8" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

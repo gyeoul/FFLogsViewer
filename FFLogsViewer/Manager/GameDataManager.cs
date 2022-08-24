@@ -24,6 +24,15 @@ public class GameDataManager : IDisposable
         new Metric { Name = Service.Localization.GetString("Tank Combined") + " nDPS", InternalName = "tankcombinedndps" },
     };
 
+    public static readonly List<Partition> AvailablePartitions = new()
+    {
+        new Partition { Name = "Standard", Id = -1 },
+        new Partition { Name = "Non-Standard", Id = -2 },
+    };
+
+    public volatile bool IsDataReady;
+    public volatile bool IsDataLoading;
+    public volatile bool HasFailed;
     public GameData? GameData;
     public bool HasFailed;
     public bool IsDataLoading;
@@ -42,6 +51,11 @@ public class GameDataManager : IDisposable
         return new Job { Name = "All jobs", Color = new Vector4(255, 255, 255, 255) };
     }
 
+    public static Partition GetDefaultPartition()
+    {
+        return AvailablePartitions[0];
+    }
+
     public void Dispose()
     {
         this.JobIconsManager.Dispose();
@@ -51,7 +65,10 @@ public class GameDataManager : IDisposable
 
     public void FetchData()
     {
-        if (this.IsDataLoading) return;
+        if (this.IsDataLoading)
+        {
+            return;
+        }
 
         this.IsDataReady = false;
         this.IsDataLoading = true;
