@@ -58,7 +58,10 @@ public class HeaderBar
         var calcInputSize = (contentRegionAvailWidth - (ImGui.GetStyle().ItemSpacing.X * 2) - buttonsWidth) / 3;
 
         ImGui.SetNextItemWidth(calcInputSize);
-        ImGui.InputTextWithHint("##FirstName", Service.Localization.GetString("Main_Name"), ref Service.CharDataManager.DisplayedChar.FirstName, 18, ImGuiInputTextFlags.CharsNoBlank);
+        if (ImGui.InputTextWithHint("##FirstName", Service.Localization.GetString("Main_Name"), ref Service.CharDataManager.DisplayedChar.FirstName, 18, ImGuiInputTextFlags.CharsNoBlank))
+        {
+            Service.CharDataManager.DisplayedChar.FirstName = Service.CharDataManager.DisplayedChar.FirstName[..Math.Min(Service.CharDataManager.DisplayedChar.FirstName.Length, 6)];
+        }
 
         ImGui.SameLine();
         ImGui.SetNextItemWidth(calcInputSize);
