@@ -75,7 +75,7 @@ public class StatsTab
                 }
 
                 ImGui.TableNextColumn();
-                ImGui.Text(stat.Name);
+                ImGui.TextUnformatted(stat.Name);
 
                 ImGui.TableNextColumn();
                 var offset = (ImGui.GetContentRegionAvail().X - (22 * ImGuiHelpers.GlobalScale)) / 2;

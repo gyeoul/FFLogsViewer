@@ -35,8 +35,15 @@ public class MainWindow : Window
         return true;
     }
 
+    public void Open()
+    {
+        this.IsOpen = true;
+        this.OnOpen();
+    }
+
     public override void OnOpen()
     {
+        this.ResetSize();
         this.ResetTemporarySettings();
     }
 

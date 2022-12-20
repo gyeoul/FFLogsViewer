@@ -21,3 +21,4 @@
 
 ![image](https://github.com/Aireil/FFLogsViewer/raw/master/res/contextMenu1.png)
 ![image](https://github.com/Aireil/FFLogsViewer/raw/master/res/contextMenu2.png)
+

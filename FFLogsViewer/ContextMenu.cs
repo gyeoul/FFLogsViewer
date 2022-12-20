@@ -73,8 +73,8 @@ public class ContextMenu : IDisposable
         }
         else
         {
-            Service.CharDataManager.DisplayedChar.FetchTextCharacter(playerName);
-            Service.MainWindow.IsOpen = true;
+            Service.MainWindow.Open();
+            Service.CharDataManager.DisplayedChar.FetchCharacter(playerName);
         }
     }
 

@@ -143,7 +143,10 @@ public class Table
                             Util.SetHoverTooltip("No data available.\n" +
                                                  "\n" +
                                                  "This error is expected when the encounter is a recent addition to the layout or not yet listed on FF Logs.\n" +
-                                                 "If neither of these is the case, please try adding the encounter again.");
+                                                 "If neither of these is the case, please " +
+                                                 (Service.Configuration.IsDefaultLayout
+                                                     ? "report the issue on GitHub."
+                                                     : "try adding the encounter again."));
                         }
                     }
                     else if (encounter is { IsLockedIn: false })
@@ -256,7 +259,7 @@ public class Table
                                    .Where(entry => entry.SwapId == swapId && entry.SwapNumber > swapNumber)
                                    .Select(entry => entry.SwapNumber)
                                    .Distinct()
-                                   .OrderBy(groupNumber => Math.Abs(swapNumber - groupNumber)).First();
+                                   .MinBy(groupNumber => Math.Abs(swapNumber - groupNumber));
         }
 
         this.currSwaps[swapId] = newSwapNumber;

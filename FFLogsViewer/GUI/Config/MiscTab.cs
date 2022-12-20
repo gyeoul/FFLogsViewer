@@ -1,4 +1,7 @@
+﻿using System;
 using Dalamud.Interface.Colors;
+using Dalamud.Interface.Internal.Notifications;
+using Dalamud.Logging;
 using ImGuiNET;
 
 namespace FFLogsViewer.GUI.Config;
@@ -94,6 +97,7 @@ public class MiscTab
 
         if (ImGui.CollapsingHeader(Service.Localization.GetString("Misc_API_Client_Tutorial")))
         {
+            ImGui.AlignTextToFramePadding();
             ImGui.Bullet();
             ImGui.Text(Service.Localization.GetString("Misc_API_Client_Tutorial_1"));
             ImGui.SameLine();
@@ -102,30 +106,33 @@ public class MiscTab
                 Util.OpenLink("https://www.fflogs.com/api/clients/");
             }
 
+            ImGui.AlignTextToFramePadding();
             ImGui.Bullet();
             ImGui.Text(Service.Localization.GetString("Misc_API_Client_Tutorial_2"));
-            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 7);
 
+            ImGui.AlignTextToFramePadding();
             ImGui.Bullet();
             ImGui.Text(Service.Localization.GetString("Misc_API_Client_Tutorial_3"));
             ImGui.SameLine();
             if (ImGui.Button($"{Service.Localization.GetString("Copy")}##APIClientCopyName"))
             {
-                ImGui.SetClipboardText("Plugin");
+                CopyToClipboard("Plugin");
             }
 
+            ImGui.AlignTextToFramePadding();
             ImGui.Bullet();
             ImGui.Text(Service.Localization.GetString("Misc_API_Client_Tutorial_4"));
             ImGui.SameLine();
             if (ImGui.Button($"{Service.Localization.GetString("Copy")}##APIClientCopyUrl"))
             {
-                ImGui.SetClipboardText("https://www.example.com");
+                CopyToClipboard("https://www.example.com");
             }
 
+            ImGui.AlignTextToFramePadding();
             ImGui.Bullet();
             ImGui.Text(Service.Localization.GetString("Misc_API_Client_Tutorial_5"));
-            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 7);
 
+            ImGui.AlignTextToFramePadding();
             ImGui.Bullet();
             ImGui.Text(Service.Localization.GetString("Misc_API_Client_Tutorial_6"));
         }
@@ -133,6 +140,20 @@ public class MiscTab
         if (hasChanged)
         {
             Service.Configuration.Save();
+        }
+    }
+
+    private static void CopyToClipboard(string text)
+    {
+        try
+        {
+            ImGui.SetClipboardText(text);
+            Service.Interface.UiBuilder.AddNotification(text, "Copied to clipboard", NotificationType.Success);
+        }
+        catch (Exception ex)
+        {
+            PluginLog.Error(ex, "Could not set clipboard text.");
+            Service.Interface.UiBuilder.AddNotification(text, "Could not copy to clipboard", NotificationType.Error);
         }
     }
 }
