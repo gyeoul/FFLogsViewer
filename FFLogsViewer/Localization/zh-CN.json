@@ -74,7 +74,7 @@
 
     "Layout_AutoUpdateLayout": "自动更新布局: ",
     "Layout_AutoUpdateLayout_Help_Enabled": "如果插件有更新的话,布局会自动更新.",
-    "Layout_AutoUpdateLayout_Help_Disabled": "如果插件更新了布局不会自动更新.\n你要自己手动加副本.",
+    "Layout_AutoUpdateLayout_Help_Disabled": "如果插件更新了布局不会自动更新.\n需要你要自己手动加副本.",
     "Layout_ResetLayout": "重置布局并开启自动更新",
     "Layout_ResetLayout_Popup": "这将会清除你所有的改动.\n你确定要这么做?",
     "Layout_Delete_Popup": "这将会删除你所有的条目.\n你确定要这么做?",

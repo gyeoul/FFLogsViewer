@@ -74,7 +74,7 @@
 
     "Layout_AutoUpdateLayout": "Auto-update layout: ",
     "Layout_AutoUpdateLayout_Help_Enabled": "The layout will automatically update with new encounters, if the plugin is updated.",
-    "Layout_AutoUpdateLayout_Help_Disabled": "The layout will not automatically update if the plugin is updated.\nYou will have to add new encounters yourself.",
+    "Layout_AutoUpdateLayout_Help_Disabled": "Because you modified the layout, it will not automatically update if the plugin is updated.\nYou will have to add new encounters yourself once they have been added to FF Logs.",
     "Layout_ResetLayout": "Reset layout and resume auto-update",
     "Layout_ResetLayout_Popup": "This will WIPE any changes you have made.\nAre you sure you want to do this?",
     "Layout_Delete_Popup": "This will DELETE all the entries.\nAre you sure you want to do this?",
