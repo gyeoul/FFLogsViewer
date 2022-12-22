@@ -263,5 +263,6 @@ public class Table
         }
 
         this.currSwaps[swapId] = newSwapNumber;
+        Service.MainWindow.ResetSize();
     }
 }

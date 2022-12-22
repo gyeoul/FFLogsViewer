@@ -93,8 +93,7 @@ public class MenuBar
                 ImGui.EndMenu();
             }
 
-            /*
-            if (!Service.Configuration.IsUpdateDismissed2060)
+            /*if (!Service.Configuration.IsUpdateDismissed2060)
             {
                 var isButtonHidden = !ImGui.IsPopupOpen("##UpdateMessage") && DateTime.Now.Second % 2 == 0;
                 if (isButtonHidden)
@@ -143,55 +142,6 @@ public class MenuBar
                 }
             }
             */
-
-            if (!Service.Configuration.IsUpdateDismissed)
-            {
-                var isButtonHidden = !ImGui.IsPopupOpen("##UpdateMessage") && DateTime.Now.Second % 2 == 0;
-                if (isButtonHidden)
-                {
-                    ImGui.PushStyleColor(ImGuiCol.Text, Vector4.Zero);
-                }
-
-                ImGui.PushFont(UiBuilder.IconFont);
-
-                ImGui.SameLine();
-                if (ImGui.MenuItem(FontAwesomeIcon.InfoCircle.ToIconString()))
-                {
-                    ImGui.OpenPopup("##UpdateMessage");
-                }
-
-                ImGui.PopFont();
-
-                if (isButtonHidden)
-                {
-                    ImGui.PopStyleColor();
-                }
-
-                if (!Service.Configuration.IsUpdateDismissed)
-                {
-                    Util.SetHoverTooltip("Update message");
-                }
-
-                if (ImGui.BeginPopup("##UpdateMessage", ImGuiWindowFlags.NoMove))
-                {
-                    ImGui.Text(Service.Localization.GetString("MenuBar_UpdateMessage_Text"));
-
-                    if (ImGui.Button($"{Service.Localization.GetString("Dismiss")}##UpdateMessage"))
-                    {
-                        Service.Configuration.IsUpdateDismissed = true;
-                        Service.Configuration.Save();
-                        ImGui.CloseCurrentPopup();
-                    }
-
-                    ImGui.SameLine();
-                    if (ImGui.Button(Service.Localization.GetString("OpenGithubRepo")))
-                    {
-                        Util.OpenLink("https://github.com/NukoOoOoOoO/FFLogsViewer");
-                    }
-
-                    ImGui.EndPopup();
-                }
-            }
 
             ImGui.EndMenuBar();
         }
