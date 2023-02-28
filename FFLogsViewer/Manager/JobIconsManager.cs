@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dalamud.Logging;
@@ -64,7 +64,8 @@ public class JobIconsManager : IDisposable
             if (iconTex != null)
             {
                 var tex = Service.Interface.UiBuilder.LoadImageRaw(iconTex.GetRgbaImageData(), iconTex.Header.Width, iconTex.Header.Height, 4);
-                if (tex.ImGuiHandle != nint.Zero)
+                // if (tex.ImGuiHandle != nint.Zero) // :sob: we need NET7
+                if (tex.ImGuiHandle != IntPtr.Zero)
                 {
                     return tex;
                 }
