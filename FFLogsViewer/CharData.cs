@@ -17,15 +17,48 @@ namespace FFLogsViewer;
 public class CharData
 {
     public Metric? LoadedMetric;
+    public CharacterError? CharError;
     public string FirstName = string.Empty;
     public string WorldName = string.Empty;
     public string RegionName = string.Empty;
     public string LoadedFirstName = string.Empty;
     public string LoadedWorldName = string.Empty;
+    public uint JobId; // only used in party view
     public volatile bool IsDataLoading;
     public volatile bool IsDataReady;
 
+    public string Abbreviation
+    {
+        get
+        {
+            if (this.FirstName == string.Empty)
+            {
+                return "-";
+            }
+
+            return $"{this.FirstName[0]}";
+        }
+    }
+
     public List<Encounter> Encounters = new();
+
+    public CharData(string? firstName = null,  string? worldName = null, uint? jobId = null)
+    {
+        if (firstName != null)
+        {
+            this.FirstName = firstName;
+        }
+
+        if (worldName != null)
+        {
+            this.WorldName = worldName;
+        }
+
+        if (jobId != null)
+        {
+            this.JobId = (uint)jobId;
+        }
+    }
 
     public void SetInfo(string firstName, string worldName)
     {
@@ -37,7 +70,7 @@ public class CharData
     {
         if (playerCharacter.HomeWorld.GameData?.Name == null)
         {
-            Service.MainWindow.SetErrorMessage(Service.Localization.GetString("Error_CannotFetchWorldName"));
+            this.CharError = CharacterError.GenericError;
             PluginLog.Error("SetInfo character world was null");
             return false;
         }
@@ -59,34 +92,34 @@ public class CharData
         {
             if (this.SetInfo(targetCharacter))
             {
-                this.FetchData();
+                this.FetchLogs();
             }
         }
         else
         {
-            Service.MainWindow.SetErrorMessage(Service.Localization.GetString("Error_InvalidTarget"));
+            this.CharError = CharacterError.InvalidTarget;
         }
     }
 
-    public void FetchData()
+    public void FetchLogs()
     {
         if (this.IsDataLoading)
         {
             return;
         }
 
-        Service.MainWindow.SetErrorMessage(string.Empty);
+        this.CharError = null;
 
         if (!this.IsInfoSet())
         {
-            Service.MainWindow.SetErrorMessage(Service.Localization.GetString("Error_FillInfo"));
+            this.CharError = CharacterError.MissingInputs;
             return;
         }
 
         var regionName = CharDataManager.GetRegionName(this.WorldName);
         if (regionName == null)
         {
-            Service.MainWindow.SetErrorMessage(Service.Localization.GetString("Error_InvalidWorldName"));
+            this.CharError = CharacterError.InvalidWorld;
             return;
         }
 
@@ -96,35 +129,53 @@ public class CharData
         this.ResetData();
         Task.Run(async () =>
         {
-            var rawData = await Service.FfLogsClient.FetchLogs(this).ConfigureAwait(false);
+            var rawData = await Service.FFLogsClient.FetchLogs(this).ConfigureAwait(false);
             if (rawData == null)
             {
                 this.IsDataLoading = false;
-                Service.MainWindow.SetErrorMessage(Service.Localization.GetString("Error_CannotReachServer"));
+                Service.FFLogsClient.InvalidateCache(this);
+                this.CharError = CharacterError.Unreachable;
                 PluginLog.Error("rawData is null");
                 return;
             }
 
             if (rawData.data?.characterData?.character == null)
             {
-                if (rawData.error != null && rawData.error == "Unauthenticated.")
+                this.IsDataLoading = false;
+
+                if (rawData.error != null)
                 {
-                    this.IsDataLoading = false;
-                    Service.MainWindow.SetErrorMessage(Service.Localization.GetString("Error_InvalidApiClient"));
-                    PluginLog.Log($"Unauthenticated: {rawData}");
+                    if (rawData.error == "Unauthenticated.")
+                    {
+                        this.CharError = CharacterError.Unauthenticated;
+                        Service.FFLogsClient.InvalidateCache(this);
+                        PluginLog.Information($"Unauthenticated: {rawData}");
+                        return;
+                    }
+
+                    if (rawData.status != null && rawData.status == 429)
+                    {
+                        this.CharError = CharacterError.OutOfPoints;
+                        Service.FFLogsClient.InvalidateCache(this);
+                        PluginLog.Information($"Ran out of points: {rawData}");
+                        return;
+                    }
+
+                    this.CharError = CharacterError.GenericError;
+                    Service.FFLogsClient.InvalidateCache(this);
+                    PluginLog.Information($"Generic error: {rawData}");
                     return;
                 }
 
                 if (rawData.errors != null)
                 {
-                    this.IsDataLoading = false;
-                    Service.MainWindow.SetErrorMessage(Service.Localization.GetString("Error_MalformedQuery"));
-                    PluginLog.Log($"Malformed GraphQL query: {rawData}");
+                    this.CharError = CharacterError.MalformedQuery;
+                    Service.FFLogsClient.InvalidateCache(this);
+                    PluginLog.Information($"Malformed GraphQL query: {rawData}");
                     return;
                 }
 
-                this.IsDataLoading = false;
-                Service.MainWindow.SetErrorMessage(Service.Localization.GetString("Error_CharacterNotFound"));
+                this.CharError = CharacterError.CharacterNotFoundFFLogs;
                 return;
             }
 
@@ -133,7 +184,7 @@ public class CharData
             if (character.hidden == "true")
             {
                 this.IsDataLoading = false;
-                Service.MainWindow.SetErrorMessage(Service.Localization.GetString("Error_HiddenLogs").Replace("{Name}", this.FirstName).Replace("{World}", this.WorldName));
+                this.CharError = CharacterError.HiddenLogs;
                 return;
             }
 
@@ -156,7 +207,7 @@ public class CharData
             this.IsDataLoading = false;
             if (!t.IsFaulted) return;
             if (t.Exception == null) return;
-            Service.MainWindow.SetErrorMessage(Service.Localization.GetString("Error_NetworkingError"));
+            this.CharError = CharacterError.NetworkError;
             foreach (var e in t.Exception.Flatten().InnerExceptions)
             {
                 PluginLog.Error(e, "Networking error");
@@ -197,7 +248,7 @@ public class CharData
         {
             if (ImGui.GetClipboardText() == null)
             {
-                Service.MainWindow.SetErrorMessage(Service.Localization.GetString("Error_CouldntGetClipboardText"));
+                this.CharError = CharacterError.ClipboardError;
                 return;
             }
 
@@ -205,7 +256,7 @@ public class CharData
         }
         catch
         {
-            Service.MainWindow.SetErrorMessage(Service.Localization.GetString("Error_CouldntGetClipboardText"));
+            this.CharError = CharacterError.ClipboardError;
             return;
         }
 
@@ -214,13 +265,15 @@ public class CharData
 
     public void FetchCharacter(string text)
     {
+        Service.MainWindow.IsPartyView = false;
+
         if (!this.ParseTextForChar(text))
         {
-            Service.MainWindow.SetErrorMessage(Service.Localization.GetString("Error_NoCharacterFound"));
+            this.CharError = CharacterError.CharacterNotFound;
             return;
         }
 
-        this.FetchData();
+        this.FetchLogs();
     }
 
     public void FetchCharacter(string fullName, ushort worldId)
@@ -230,7 +283,7 @@ public class CharData
 
         if (world == null)
         {
-            Service.MainWindow.SetErrorMessage("World not found.");
+            this.CharError = CharacterError.WorldNotFound;
             return;
         }
 

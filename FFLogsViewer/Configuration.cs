@@ -20,12 +20,18 @@ public class Configuration : IPluginConfiguration
     public string? ContextMenuButtonName { get; set; } = "Search FF Logs";
     public bool HideInCombat { get; set; }
     public bool IsDefaultLayout { get; set; } = true;
+    public bool IsHistoricalDefault { get; set; } = true;
+    public bool IsEncounterLayout { get; set; } = true;
+    public bool IsCachingEnabled { get; set; } = true;
     public int NbOfDecimalDigits { get; set; }
+    public StatType? DefaultStatTypePartyView { get; set; }
+    public LayoutEntry? DefaultEncounterPartyView { get; set; }
     public List<LayoutEntry> Layout { get; set; } = new();
     public List<Stat> Stats { get; set; } = new();
     public Metric Metric { get; set; } = new() { Name = "rDPS", InternalName = "rdps" };
     public Style Style { get; set; } = new();
     public OpenWith OpenWith { get; set; } = new();
+    public bool IsUpdateDismissed2100 { get; set; } = false;
 
     public void Save()
     {
@@ -90,10 +96,11 @@ public class Configuration : IPluginConfiguration
             new() { Type = LayoutEntryType.Encounter, Expansion = "Endwalker", Zone = "Ultimates (Legacy)", ZoneId = 43, Encounter = "The Unending Coil of Bahamut", EncounterId = 1060, Difficulty = "Normal", DifficultyId = 100, Alias = "UCoB" },
             new() { Type = LayoutEntryType.Encounter, Expansion = "Endwalker", Zone = "Ultimates (Legacy)", ZoneId = 43, Encounter = "The Weapon's Refrain", EncounterId = 1061, Difficulty = "Normal", DifficultyId = 100, Alias = "UwU" },
             new() { Type = LayoutEntryType.Encounter, Expansion = "Endwalker", Zone = "Ultimates (Legacy)", ZoneId = 43, Encounter = "The Epic of Alexander", EncounterId = 1062, Difficulty = "Normal", DifficultyId = 100, Alias = "TEA" },
-            new() { Type = LayoutEntryType.Encounter, Expansion = "Endwalker", Zone = "Ultimates", ZoneId = 45, Encounter = "Dragonsong's Reprise", EncounterId = 1065, Difficulty = "Normal", DifficultyId = 100, Alias = "DSR" },
+            new() { Type = LayoutEntryType.Encounter, Expansion = "Endwalker", Zone = "Dragonsong's Reprise", ZoneId = 45, Encounter = "Dragonsong's Reprise", EncounterId = 1065, Difficulty = "Normal", DifficultyId = 100, Alias = "DSR" },
+            new() { Type = LayoutEntryType.Encounter, Expansion = "Endwalker", Zone = "The Omega Protocol", ZoneId = 53, Encounter = "The Omega Protocol", EncounterId = 1068, Difficulty = "Normal", DifficultyId = 100, Alias = "TOP" },
             new() { Type = LayoutEntryType.Header, Alias = "Trials (Extreme)", Expansion = "-", Zone = "-", Encounter = "-", Difficulty = "-" },
-            new() { Type = LayoutEntryType.Encounter, Expansion = "Endwalker", Zone = "Trials I (Extreme)", ZoneId = 42, Encounter = "Endsinger", EncounterId = 1063, Difficulty = "Normal", DifficultyId = 100 },
-            new() { Type = LayoutEntryType.Encounter, Expansion = "Endwalker", Zone = "Trials II (Extreme)", ZoneId = 50, Encounter = "Barbariccia", EncounterId = 1066, Difficulty = "Normal", DifficultyId = 100 },
+            new() { Type = LayoutEntryType.Encounter, Expansion = "Endwalker", Zone = "Trials I (Extreme)", ZoneId = 42, Encounter = "Barbariccia", EncounterId = 1066, Difficulty = "Normal", DifficultyId = 100 },
+            new() { Type = LayoutEntryType.Encounter, Expansion = "Endwalker", Zone = "Trials II (Extreme)", ZoneId = 50, Encounter = "Rubicante", EncounterId = 1067, Difficulty = "Normal", DifficultyId = 100 },
         };
     }
 

@@ -50,6 +50,7 @@ public class ContextMenu : IDisposable
             case "CrossWorldLinkshell":
             case "ContentMemberList": // Eureka/Bozja/...
             case "BeginnerChatList":
+            case "BlackList":
                 return args.Text != null && args.ObjectWorld != 0 && args.ObjectWorld != 65535;
 
             default:
@@ -67,7 +68,7 @@ public class ContextMenu : IDisposable
 
         var playerName = $"{args.Text}@{world.Name}";
 
-        if (Service.Configuration.OpenInBrowser && !Service.Configuration.ContextMenuStreamer)
+        if (Service.Configuration is { OpenInBrowser: true, ContextMenuStreamer: false })
         {
             CharDataManager.OpenCharInBrowser(playerName);
         }

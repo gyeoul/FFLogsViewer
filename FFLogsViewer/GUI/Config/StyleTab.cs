@@ -106,7 +106,8 @@ public class StyleTab
             }
         }
 
-        hasStyleChanged |= ImGui.Checkbox(Service.Localization.GetString("Style_HeaderSeparator"), ref style.IsHeaderSeparatorDrawn);
+        hasStyleChanged |= ImGui.Checkbox("Abbreviate job names", ref style.AbbreviateJobNames);
+        hasStyleChanged |= ImGui.Checkbox("Header separator", ref style.IsHeaderSeparatorDrawn);
 
         var tmpTableFlags2 = (int)style.MainTableFlags;
         if (ImGui.CheckboxFlags($"{Service.Localization.GetString("Style_AlternateRowBackground")}##TableFlag", ref tmpTableFlags2, (int)ImGuiTableFlags.RowBg))
@@ -142,6 +143,13 @@ public class StyleTab
 
         ImGui.Unindent();
 
+        ImGui.Text("Party view:");
+
+        ImGui.Indent();
+
+        hasStyleChanged |= ImGui.Checkbox("Include yourself in the party view", ref style.IsLocalPlayerInPartyView);
+
+        ImGui.Unindent();
         if (hasStyleChanged)
         {
             Service.Configuration.Save();

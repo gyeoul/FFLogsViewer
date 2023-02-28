@@ -10,27 +10,12 @@ namespace FFLogsViewer.GUI.Main;
 
 public class HeaderBar
 {
-    public string? ErrorMessage = string.Empty;
     public uint ResetSizeCount;
 
     private readonly Stopwatch partyListStopwatch = new();
-    private bool isProfileLinkClicked;
-    private bool isConfigClicked;
 
     public void Draw()
     {
-        if (this.isConfigClicked)
-        {
-            Service.ConfigWindow.IsOpen = true;
-            this.isConfigClicked = false;
-        }
-
-        if (this.isProfileLinkClicked)
-        {
-            Util.OpenLink(Service.CharDataManager.DisplayedChar);
-            this.isProfileLinkClicked = false;
-        }
-
         ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(4 * ImGuiHelpers.GlobalScale, ImGui.GetStyle().ItemSpacing.Y));
 
         var buttonsWidth = GetButtonsWidth();
@@ -70,7 +55,7 @@ public class HeaderBar
         ImGui.SameLine();
         if (Util.DrawButtonIcon(FontAwesomeIcon.Search))
         {
-            Service.CharDataManager.DisplayedChar.FetchData();
+            Service.CharDataManager.DisplayedChar.FetchLogs();
         }
 
         Util.SetHoverTooltip(Service.Localization.GetString("Main_Search"));
@@ -94,16 +79,16 @@ public class HeaderBar
         ImGui.SameLine();
         if (Util.DrawButtonIcon(FontAwesomeIcon.UsersCog))
         {
-            ImGui.OpenPopup("##PartyList");
+            ImGui.OpenPopup("##TeamList");
         }
 
         Util.SetHoverTooltip(Service.Localization.GetString("Main_PartyMembers"));
 
-        if (ImGui.BeginPopup("##PartyList", ImGuiWindowFlags.NoMove))
+        if (ImGui.BeginPopup("##TeamList", ImGuiWindowFlags.NoMove))
         {
-            Util.UpdateDelayed(this.partyListStopwatch, TimeSpan.FromSeconds(1), Service.PartyListManager.UpdatePartyList);
+            Util.UpdateDelayed(this.partyListStopwatch, TimeSpan.FromSeconds(1), Service.TeamManager.UpdateTeamList);
 
-            var partyList = Service.PartyListManager.PartyList;
+            var partyList = Service.TeamManager.TeamList;
             if (partyList.Count != 0)
             {
                 if (ImGui.BeginTable("##PartyListTable", 3, ImGuiTableFlags.RowBg))
@@ -119,11 +104,11 @@ public class HeaderBar
 
                         var partyMember = partyList[i];
                         var iconSize = 25 * ImGuiHelpers.GlobalScale;
-                        var middleCursorPosY = ImGui.GetCursorPosY() + (iconSize / 2) - (ImGui.CalcTextSize("R").Y / 2);
+                        var middleCursorPosY = ImGui.GetCursorPosY() + (iconSize / 2) - (ImGui.GetFontSize() / 2);
 
                         if (ImGui.Selectable($"##PartyListSel{i}", false, ImGuiSelectableFlags.SpanAllColumns, new Vector2(0, iconSize)))
                         {
-                            Service.CharDataManager.DisplayedChar.FetchCharacter($"{partyMember.Name}@{partyMember.World}");
+                            Service.CharDataManager.DisplayedChar.FetchCharacter($"{partyMember.FirstName} {partyMember.LastName}@{partyMember.World}");
                         }
 
                         var icon = Service.GameDataManager.JobIconsManager.GetJobIcon(partyMember.JobId);
@@ -136,13 +121,12 @@ public class HeaderBar
                         {
                             ImGui.SetCursorPosY(middleCursorPosY);
                             ImGui.Text("(?)");
-                            Util.SetHoverTooltip(Service.Localization.GetString("Main_IconError"));
                         }
 
                         ImGui.TableNextColumn();
 
                         ImGui.SetCursorPosY(middleCursorPosY);
-                        ImGui.Text(partyMember.Name);
+                        ImGui.Text($"{partyMember.FirstName} {partyMember.LastName}");
 
                         ImGui.TableNextColumn();
 
@@ -165,19 +149,23 @@ public class HeaderBar
 
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 2);
 
-        if (!Service.FfLogsClient.IsTokenValid)
+        if (!Service.FFLogsClient.IsTokenValid)
         {
             var message = FFLogsClient.IsConfigSet()
                               ? Service.Localization.GetString("Main_InvalidAPIClient")
                               : Service.Localization.GetString("Main_APIClientNotSetup");
             ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
-            Util.CenterSelectable(message, ref this.isConfigClicked);
+            if (Util.CenterSelectable(message))
+            {
+                Service.ConfigWindow.IsOpen = true;
+            }
+
             ImGui.PopStyleColor();
 
             return;
         }
 
-        if (this.ErrorMessage == string.Empty)
+        if (Service.CharDataManager.DisplayedChar.CharError == null)
         {
             if (Service.CharDataManager.DisplayedChar.IsDataLoading)
             {
@@ -187,9 +175,11 @@ public class HeaderBar
             {
                 if (Service.CharDataManager.DisplayedChar.IsDataReady)
                 {
-                    Util.CenterSelectable(
-                        Service.Localization.GetString("Main_ViewingLogs").Replace("{Name}", Service.CharDataManager.DisplayedChar.LoadedFirstName).Replace("{World}", Service.CharDataManager.DisplayedChar.LoadedWorldName),
-                        ref this.isProfileLinkClicked);
+                    if (Util.CenterSelectable(
+                            Service.Localization.GetString("Main_ViewingLogs").Replace("{Name}", Service.CharDataManager.DisplayedChar.LoadedFirstName).Replace("{World}", Service.CharDataManager.DisplayedChar.LoadedWorldName)))
+                    {
+                        Util.OpenLink(Service.CharDataManager.DisplayedChar);
+                    }
 
                     Util.SetHoverTooltip(Service.Localization.GetString("Main_OpenOnFFLogs"));
                 }
@@ -201,12 +191,15 @@ public class HeaderBar
         }
         else
         {
-            Util.CenterTextColored(ImGuiColors.DalamudRed, this.ErrorMessage);
+            Util.CenterText(Util.GetErrorMessage(Service.CharDataManager.DisplayedChar), ImGuiColors.DalamudRed);
         }
 
         if (Service.Configuration.Layout.Count == 0)
         {
-            Util.CenterSelectable(Service.Localization.GetString("Main_NoLayoutSetup"), ref this.isConfigClicked);
+            if (Util.CenterSelectable(Service.Localization.GetString("Main_NoLayoutSetup")))
+            {
+                Service.ConfigWindow.IsOpen = true;
+            }
         }
     }
 

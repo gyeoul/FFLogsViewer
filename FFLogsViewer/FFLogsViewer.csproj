@@ -5,6 +5,7 @@
     <Version>2.0.8.1</Version>
     <RootNamespace>FFLogsViewer</RootNamespace>
   </PropertyGroup>
+
     <PropertyGroup>
         <TargetFramework>net6.0-windows</TargetFramework>
         <Platforms>x64</Platforms>
@@ -16,8 +17,8 @@
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
         <OutputPath>bin\$(Configuration)\</OutputPath>
     </PropertyGroup>
-
-    <ItemGroup>
+  
+  <ItemGroup>
     <None Remove="stylecop.json" />
     <AdditionalFiles Include="..\stylecop.json">
       <Link>stylecop.json</Link>

@@ -72,13 +72,23 @@ public class MiscTab
             ImGui.Unindent();
         }
 
-        ImGui.Text(Service.Localization.GetString("Misc_API_Client"));
+        var isCachingEnabled = Service.Configuration.IsCachingEnabled;
+        if (ImGui.Checkbox("Enable caching", ref isCachingEnabled))
+        {
+            Service.Configuration.IsCachingEnabled = isCachingEnabled;
+            hasChanged = true;
+        }
+
+        Util.DrawHelp("Build a cache of fetched characters to avoid using too much API points (see Layout tab for more info on points).\n" +
+                      "The cache is cleared every hour, you can also manually clear it in the main window.");
+
+        ImGui.Text("API client:");
 
         var configurationClientId = Service.Configuration.ClientId;
         if (ImGui.InputText($"{Service.Localization.GetString("Misc_API_ClientID")}##ClientId", ref configurationClientId, 50))
         {
             Service.Configuration.ClientId = configurationClientId;
-            Service.FfLogsClient.SetToken();
+            Service.FFLogsClient.SetToken();
             hasChanged = true;
         }
 
@@ -86,14 +96,34 @@ public class MiscTab
         if (ImGui.InputText($"{Service.Localization.GetString("Misc_API_ClientSecret")}##ClientSecret", ref configurationClientSecret, 50))
         {
             Service.Configuration.ClientSecret = configurationClientSecret;
-            Service.FfLogsClient.SetToken();
+            Service.FFLogsClient.SetToken();
             hasChanged = true;
         }
 
-        if (Service.FfLogsClient.IsTokenValid)
-            ImGui.TextColored(ImGuiColors.HealerGreen, Service.Localization.GetString("Misc_API_ClientValid"));
+        if (Service.FFLogsClient.IsTokenValid)
+        {
+            ImGui.TextColored(ImGuiColors.HealerGreen, "This client is valid.");
+        }
         else
-            ImGui.TextColored(ImGuiColors.DalamudRed, Service.Localization.GetString("Misc_API_ClientNotValid"));
+        {
+            ImGui.TextColored(ImGuiColors.DalamudRed, "This client is NOT valid.");
+            if (FFLogsClient.IsConfigSet())
+            {
+                ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudRed);
+                ImGui.TextWrapped("If you are certain that the API client is valid, this may indicate that FF Logs is unreachable.\nMake sure you can open it in your browser before trying again.");
+                ImGui.PopStyleColor();
+                if (ImGui.Button("Open FF Logs"))
+                {
+                    Util.OpenLink("https://www.fflogs.com/");
+                }
+
+                ImGui.SameLine();
+                if (ImGui.Button("Try again"))
+                {
+                    Service.FFLogsClient.SetToken();
+                }
+            }
+        }
 
         if (ImGui.CollapsingHeader(Service.Localization.GetString("Misc_API_Client_Tutorial")))
         {

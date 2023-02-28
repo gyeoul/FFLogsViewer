@@ -11,6 +11,8 @@ public class MainWindow : Window
     public Job Job = GameDataManager.GetDefaultJob();
     public Partition Partition = GameDataManager.GetDefaultPartition();
     public Metric? OverriddenMetric;
+    public bool IsOverridingTimeframe;
+    public bool IsPartyView;
 
     private readonly HeaderBar headerBar = new();
     private readonly Table table = new();
@@ -35,10 +37,14 @@ public class MainWindow : Window
         return true;
     }
 
-    public void Open()
+    public void Open(bool takeFocus = true)
     {
+        if (!takeFocus)
+        {
+            this.Flags |= ImGuiWindowFlags.NoFocusOnAppearing;
+        }
+
         this.IsOpen = true;
-        this.OnOpen();
     }
 
     public override void OnOpen()
@@ -47,21 +53,26 @@ public class MainWindow : Window
         this.ResetTemporarySettings();
     }
 
-    public override void Draw()
+    public override void OnClose()
     {
-        MenuBar.Draw();
-
-        this.headerBar.Draw();
-
-        if (Service.CharDataManager.DisplayedChar.IsDataReady)
-        {
-            this.table.Draw();
-        }
+        this.Flags &= ~ImGuiWindowFlags.NoFocusOnAppearing;
     }
 
-    public void SetErrorMessage(string? message)
+    public override void Draw()
     {
-        this.headerBar.ErrorMessage = message;
+        if (this.IsPartyView && !Service.FFLogsClient.IsTokenValid)
+        {
+            this.IsPartyView = false;
+        }
+
+        MenuBar.Draw();
+
+        if (!this.IsPartyView)
+        {
+            this.headerBar.Draw();
+        }
+
+        this.table.Draw();
     }
 
     public void ResetSize()
@@ -77,7 +88,18 @@ public class MainWindow : Window
     {
         this.Job = GameDataManager.GetDefaultJob();
         this.OverriddenMetric = null;
+        this.IsOverridingTimeframe = false;
         this.Partition = GameDataManager.GetDefaultPartition();
+    }
+
+    public Metric GetCurrentMetric()
+    {
+        return this.OverriddenMetric ?? Service.Configuration.Metric;
+    }
+
+    public bool IsTimeframeHistorical()
+    {
+        return this.IsOverridingTimeframe ? !Service.Configuration.IsHistoricalDefault : Service.Configuration.IsHistoricalDefault;
     }
 
     public void ResetSwapGroups()

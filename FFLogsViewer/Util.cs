@@ -7,6 +7,7 @@ using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using FFLogsViewer.Manager;
+using FFLogsViewer.Model;
 using ImGuiNET;
 
 namespace FFLogsViewer;
@@ -83,29 +84,74 @@ public class Util
         return color / 255;
     }
 
-    public static void CenterCursor(string? text)
+    public static void CenterCursor(float width)
     {
-        var offset = (ImGui.GetContentRegionAvail().X - ImGui.CalcTextSize(text).X) / 2;
+        var offset = (ImGui.GetContentRegionAvail().X - width) / 2;
         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offset);
     }
 
-    public static void CenterTextColored(Vector4 color, string? text)
+    public static void CenterCursor(string text)
     {
-        CenterCursor(text);
-        ImGui.TextColored(color, text);
+        CenterCursor(ImGui.CalcTextSize(text, true).X);
     }
 
-    public static void CenterText(string? text)
+    public static void CenterText(string text, Vector4? color = null)
     {
         CenterCursor(text);
+
+        color ??= ImGui.ColorConvertU32ToFloat4(ImGui.GetColorU32(ImGuiCol.Text));
+        ImGui.PushStyleColor(ImGuiCol.Text, color.Value);
         ImGui.TextUnformatted(text);
+        ImGui.PopStyleColor();
     }
 
-    public static void CenterSelectable(string? text, ref bool isClicked)
+    public static void CenterTextWithError(string text, CharData? charData)
+    {
+        CenterText(text, charData?.CharError != null ? ImGuiColors.DalamudRed : null);
+
+        if (charData?.CharError != null)
+        {
+            SetHoverTooltip(GetErrorMessage(charData));
+        }
+    }
+
+    public static bool CenterSelectableWithError(string text, CharData? charData)
+    {
+        var ret = CenterSelectable(text, charData?.CharError != null ? ImGuiColors.DalamudRed : null);
+        if (charData?.CharError != null)
+        {
+            SetHoverTooltip(GetErrorMessage(charData));
+        }
+
+        return ret;
+    }
+
+    public static bool CenterSelectable(string text, Vector4? color = null)
     {
         CenterCursor(text);
-        var textSize = ImGui.CalcTextSize(text);
-        ImGui.Selectable(text, ref isClicked, ImGuiSelectableFlags.None, textSize);
+
+        color ??= ImGui.ColorConvertU32ToFloat4(ImGui.GetColorU32(ImGuiCol.Text));
+        ImGui.PushStyleColor(ImGuiCol.Text, color.Value);
+        var ret = ImGui.Selectable(text, false, ImGuiSelectableFlags.None, ImGui.CalcTextSize(text, true));
+        ImGui.PopStyleColor();
+
+        return ret;
+    }
+
+    public static bool SelectableWithError(string text, CharData? charData)
+    {
+        var color = charData?.CharError != null
+                        ? ImGuiColors.DalamudRed
+                        : ImGui.ColorConvertU32ToFloat4(ImGui.GetColorU32(ImGuiCol.Text));
+        ImGui.PushStyleColor(ImGuiCol.Text, color);
+        var ret = ImGui.Selectable(text);
+        ImGui.PopStyleColor();
+        if (charData?.CharError != null)
+        {
+            SetHoverTooltip(GetErrorMessage(charData));
+        }
+
+        return ret;
     }
 
     public static void SetHoverTooltip(string? tooltip)
@@ -176,5 +222,47 @@ public class Util
             stopwatch.Start();
             function();
         }
+    }
+
+    public static string GetErrorMessage(CharData charData)
+    {
+        return charData.CharError switch
+        {
+            CharacterError.CharacterNotFoundFFLogs => "Character not found on FF Logs",
+            CharacterError.CharacterNotFound => "Character not found",
+            CharacterError.ClipboardError => "Couldn't get clipboard text",
+            CharacterError.GenericError => "An error occured, please try again",
+            CharacterError.HiddenLogs => $"{charData.FirstName}@{charData.WorldName}'s logs are hidden",
+            CharacterError.InvalidTarget => "Not a valid target",
+            CharacterError.InvalidWorld => "World not supported or invalid",
+            CharacterError.MalformedQuery => "Malformed GraphQL query.",
+            CharacterError.MissingInputs => "Please fill first name, last name, and world",
+            CharacterError.NetworkError => "Networking error, please try again",
+            CharacterError.OutOfPoints => "Ran out of API points, see Layout tab in config for more info.",
+            CharacterError.Unauthenticated => "API Client not valid, check config",
+            CharacterError.Unreachable => "Could not reach FF Logs servers",
+            CharacterError.WorldNotFound => "World not found",
+            _ => "If you see this, something went wrong",
+        };
+    }
+
+    public static string GetMetricAbbreviation(CharData? charData)
+    {
+        if (charData?.LoadedMetric != null)
+        {
+            return charData.LoadedMetric.Abbreviation;
+        }
+
+        if (Service.MainWindow.OverriddenMetric != null)
+        {
+            return Service.MainWindow.OverriddenMetric.Abbreviation;
+        }
+
+        return Service.Configuration.Metric.Abbreviation;
+    }
+
+    public static int MathMod(int a, int b)
+    {
+        return (Math.Abs(a * b) + a) % b;
     }
 }

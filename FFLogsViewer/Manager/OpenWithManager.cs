@@ -32,7 +32,7 @@ public unsafe class OpenWithManager
     private delegate void* ProcessPartyFinderDetailPacketDelegate(IntPtr something, IntPtr packetData);
     private Hook<ProcessPartyFinderDetailPacketDelegate>? processPartyFinderDetailPacketHook;
 
-    private delegate void* AtkUnitBaseFinalizeDelegate(AtkUnitBase* addon);
+    private delegate void AtkUnitBaseFinalizeDelegate(AtkUnitBase* addon);
     private Hook<AtkUnitBaseFinalizeDelegate>? atkUnitBaseFinalizeHook;
 
     public OpenWithManager()
@@ -95,7 +95,7 @@ public unsafe class OpenWithManager
         if (Service.Configuration.OpenWith.ShouldOpenMainWindow)
         {
             this.wasOpenedLast = DateTime.Now;
-            Service.MainWindow.Open();
+            Service.MainWindow.Open(false);
             Service.MainWindow.ResetSize();
         }
 
@@ -168,8 +168,8 @@ public unsafe class OpenWithManager
         try
         {
             if (Service.Configuration.OpenWith.IsAdventurerPlateEnabled
-                && Service.GameGui.GetAddonByName("BannerEditor", 1) == IntPtr.Zero
-                && Service.GameGui.GetAddonByName("CharaCardDesignSetting", 1) == IntPtr.Zero)
+                && Service.GameGui.GetAddonByName("BannerEditor") == nint.Zero
+                && Service.GameGui.GetAddonByName("CharaCardDesignSetting") == nint.Zero)
             {
                 // To get offsets: 6.21 process chara card network packet 40 55 53 57 48 8D AC 24 ?? ?? ?? ?? 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 85 ?? ?? ?? ?? 48 83 79 ?? ?? 48 8B DA
                 var worldId = *(ushort*)(*(IntPtr*)(agentCharaCard + 40) + 192);
@@ -268,7 +268,7 @@ public unsafe class OpenWithManager
         return this.processPartyFinderDetailPacketHook!.Original(something, packetData);
     }
 
-    private void* AktUnitBaseFinalizeDetour(AtkUnitBase* addon)
+    private void AktUnitBaseFinalizeDetour(AtkUnitBase* addon)
     {
         try
         {
@@ -292,6 +292,6 @@ public unsafe class OpenWithManager
             PluginLog.Error(ex, "Exception in AktUnitBaseFinalizeDetour.");
         }
 
-        return this.atkUnitBaseFinalizeHook!.Original(addon);
+        this.atkUnitBaseFinalizeHook!.Original(addon);
     }
 }

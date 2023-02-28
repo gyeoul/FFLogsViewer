@@ -1,6 +1,8 @@
 using System;
 using System.Numerics;
 using Dalamud.Interface;
+using Dalamud.Interface.Colors;
+using Dalamud.Interface.Style;
 using FFLogsViewer.Manager;
 using ImGuiNET;
 
@@ -17,8 +19,7 @@ public class MenuBar
             ImGui.PushFont(UiBuilder.IconFont);
             if (ImGui.MenuItem(FontAwesomeIcon.Eraser.ToIconString()))
             {
-                Service.CharDataManager.ResetDisplayedChar();
-                Service.MainWindow.SetErrorMessage(string.Empty);
+                Service.CharDataManager.Reset();
                 Service.MainWindow.ResetSize();
             }
 
@@ -34,8 +35,34 @@ public class MenuBar
             ImGui.PopFont();
             Util.SetHoverTooltip(Service.Localization.GetString("Configuration"));
 
+            var swapViewIcon = Service.MainWindow.IsPartyView ? FontAwesomeIcon.User : FontAwesomeIcon.Users;
+            ImGui.PushFont(UiBuilder.IconFont);
+            if (ImGui.MenuItem(swapViewIcon.ToIconString()))
+            {
+                if (Service.FFLogsClient.IsTokenValid)
+                {
+                    Service.MainWindow.IsPartyView = !Service.MainWindow.IsPartyView;
+                }
+            }
+
+            ImGui.PopFont();
+            Util.SetHoverTooltip(Service.MainWindow.IsPartyView ? "Swap to single view" : "Swap to party view");
+
+            ImGui.PushFont(UiBuilder.IconFont);
+            if (Service.Configuration.IsCachingEnabled && ImGui.MenuItem(FontAwesomeIcon.Trash.ToIconString()))
+            {
+                Service.FFLogsClient.ClearCache();
+                Service.CharDataManager.FetchLogs();
+                Service.MainWindow.ResetSize();
+            }
+
+            ImGui.PopFont();
+            Util.SetHoverTooltip("Clear cache and refresh current logs");
+
+            var hasTmpSettingChanged = false;
+
             ImGui.PushStyleColor(ImGuiCol.Text, Service.MainWindow.Job.Color);
-            if (ImGui.BeginMenu(Service.Localization.GetString(Service.MainWindow.Job.Name)))
+            if (ImGui.BeginMenu(Service.MainWindow.Job.Abbreviation))
             {
                 foreach (var job in Service.GameDataManager.Jobs)
                 {
@@ -43,10 +70,7 @@ public class MenuBar
                     if (ImGui.MenuItem(Service.Localization.GetString(job.Name)))
                     {
                         Service.MainWindow.Job = job;
-                        if (Service.CharDataManager.DisplayedChar.IsInfoSet())
-                        {
-                            Service.CharDataManager.DisplayedChar.FetchData();
-                        }
+                        hasTmpSettingChanged = true;
                     }
 
                     ImGui.PopStyleColor();
@@ -57,91 +81,126 @@ public class MenuBar
 
             ImGui.PopStyleColor();
 
-            if (ImGui.BeginMenu(Service.MainWindow.OverriddenMetric != null
-                                    ? Service.MainWindow.OverriddenMetric.Name
-                                    : Service.Configuration.Metric.Name))
+            if (ImGui.BeginMenu(Service.MainWindow.GetCurrentMetric().Abbreviation))
             {
                 foreach (var metric in GameDataManager.AvailableMetrics)
                 {
                     if (ImGui.MenuItem(metric.Name))
                     {
                         Service.MainWindow.OverriddenMetric = metric;
-                        if (Service.CharDataManager.DisplayedChar.IsInfoSet())
-                        {
-                            Service.CharDataManager.DisplayedChar.FetchData();
-                        }
+                        hasTmpSettingChanged = true;
                     }
                 }
 
                 ImGui.EndMenu();
             }
 
-            if (ImGui.BeginMenu(Service.Localization.GetString(Service.MainWindow.Partition.Name)))
+            if (ImGui.BeginMenu(Service.MainWindow.Partition.Abbreviation))
             {
                 foreach (var partition in GameDataManager.AvailablePartitions)
                 {
                     if (ImGui.MenuItem(Service.Localization.GetString(partition.Name)))
                     {
                         Service.MainWindow.Partition = partition;
-                        if (Service.CharDataManager.DisplayedChar.IsInfoSet())
-                        {
-                            Service.CharDataManager.DisplayedChar.FetchData();
-                        }
+                        hasTmpSettingChanged = true;
                     }
                 }
 
                 ImGui.EndMenu();
             }
 
-            /*if (!Service.Configuration.IsUpdateDismissed2060)
+            if (ImGui.BeginMenu(Service.MainWindow.IsTimeframeHistorical() ? "H%" : "T%"))
             {
-                var isButtonHidden = !ImGui.IsPopupOpen("##UpdateMessage") && DateTime.Now.Second % 2 == 0;
-                if (isButtonHidden)
+                if (ImGui.MenuItem("Historical %"))
                 {
-                    ImGui.PushStyleColor(ImGuiCol.Text, Vector4.Zero);
+                    Service.MainWindow.IsOverridingTimeframe = !Service.Configuration.IsHistoricalDefault;
+                    hasTmpSettingChanged = true;
                 }
+
+                if (ImGui.MenuItem("Today %"))
+                {
+                    Service.MainWindow.IsOverridingTimeframe = Service.Configuration.IsHistoricalDefault;
+                    hasTmpSettingChanged = true;
+                }
+
+                ImGui.EndMenu();
+            }
+
+            if (hasTmpSettingChanged)
+            {
+                Service.MainWindow.ResetSize();
+                Service.CharDataManager.FetchLogs();
+            }
+
+            var isButtonHidden = Service.Configuration.IsUpdateDismissed2100 || (!ImGui.IsPopupOpen("##UpdateMessage") && DateTime.Now.Second % 2 == 0);
+            if (isButtonHidden)
+            {
+                ImGui.PushStyleColor(ImGuiCol.Text, Vector4.Zero);
+            }
+
+            ImGui.PushFont(UiBuilder.IconFont);
+
+            ImGui.SameLine();
+            if (ImGui.MenuItem(FontAwesomeIcon.InfoCircle.ToIconString()))
+            {
+                ImGui.OpenPopup("##UpdateMessage");
+            }
+
+            ImGui.PopFont();
+
+            if (isButtonHidden)
+            {
+                ImGui.PopStyleColor();
+            }
+
+            Util.SetHoverTooltip("Update message");
+
+            if (ImGui.BeginPopup("##UpdateMessage", ImGuiWindowFlags.NoMove))
+            {
+                ImGui.Text("New feature:");
+                ImGui.Text("- Party view:");
 
                 ImGui.PushFont(UiBuilder.IconFont);
-
                 ImGui.SameLine();
-                if (ImGui.MenuItem(FontAwesomeIcon.InfoCircle.ToIconString()))
-                {
-                    ImGui.OpenPopup("##UpdateMessage");
-                }
-
+                ImGui.Text(FontAwesomeIcon.Users.ToIconString());
                 ImGui.PopFont();
 
-                if (isButtonHidden)
+                ImGui.Text("   Using the 3rd button on this line, you will switch the main window to party view.\n" +
+                           "   This view allows you to easily see the logs of your current party.\n" +
+                           "   Two layouts are available:\n" +
+                           "      - Encounter layout: one stat => all encounters\n" +
+                           "      - Stat layout: one encounter => all stats\n");
+                ImGui.Text("Misc changes:");
+                ImGui.Text("- Cache:");
+
+                ImGui.PushFont(UiBuilder.IconFont);
+                ImGui.SameLine();
+                ImGui.Text(FontAwesomeIcon.Trash.ToIconString());
+                ImGui.PopFont();
+
+                ImGui.Text("   Requests are now cached.\n" +
+                           "   The cache is cleared every hour and the 4th button on this line allows you to clear it manually.\n" +
+                           "   You can disable this in the settings if you wish to.");
+                ImGui.Text("- New style setting to abbreviate job names");
+                ImGui.Text("\nIf you encounter any problem or if you have a suggestion, feel free to open an issue on the GitHub:");
+
+                if (ImGui.Button("Open the GitHub repo"))
                 {
-                    ImGui.PopStyleColor();
+                    Util.OpenLink("https://github.com/Aireil/FFLogsViewer");
                 }
 
-                if (!Service.Configuration.IsUpdateDismissed2060)
+                if (ImGui.Button("Hide##UpdateMessage"))
                 {
-                    Util.SetHoverTooltip("Update message");
+                    Service.Configuration.IsUpdateDismissed2100 = true;
+                    Service.Configuration.Save();
+                    ImGui.CloseCurrentPopup();
                 }
 
-                if (ImGui.BeginPopup("##UpdateMessage", ImGuiWindowFlags.NoMove))
-                {
-                    ImGui.Text(Service.Localization.GetString("MenuBar_UpdateMessage_Text"));
+                ImGui.SameLine();
+                ImGui.TextColored(ImGuiColors.DalamudGrey, "Click on the same spot to open this again.");
 
-                    if (ImGui.Button($"{Service.Localization.GetString("Dismiss")}##UpdateMessage"))
-                    {
-                        Service.Configuration.IsUpdateDismissed2060 = true;
-                        Service.Configuration.Save();
-                        ImGui.CloseCurrentPopup();
-                    }
-
-                    ImGui.SameLine();
-                    if (ImGui.Button(Service.Localization.GetString("OpenGithubRepo")))
-                    {
-                        Util.OpenLink("https://github.com/NukoOoOoOoO/FFLogsViewer");
-                    }
-
-                    ImGui.EndPopup();
-                }
+                ImGui.EndPopup();
             }
-            */
 
             ImGui.EndMenuBar();
         }

@@ -73,21 +73,21 @@ public class PopupEntry
 
             Util.DrawHelp(Service.Localization.GetString("PopupEntry_Header_Alias_Help"));
 
-            if (!Service.GameDataManager.IsDataReady && !Service.GameDataManager.IsDataLoading && !Service.GameDataManager.HasFailed)
+            if (Service.GameDataManager is { IsDataReady: false, IsDataLoading: false, HasFailed: false })
             {
                 Service.GameDataManager.FetchData();
             }
 
             if (currLayoutEntry.Type == LayoutEntryType.Encounter)
             {
-                if (!Service.GameDataManager.IsDataReady && Service.GameDataManager.IsDataLoading)
+                if (Service.GameDataManager is { IsDataReady: false, IsDataLoading: true })
                 {
                     ImGui.Text(Service.Localization.GetString("FetchingData"));
                     ImGui.EndPopup();
                     return;
                 }
 
-                if (!Service.GameDataManager.IsDataLoading && Service.GameDataManager.HasFailed)
+                if (Service.GameDataManager is { IsDataLoading: false, HasFailed: true })
                 {
                     if (ImGui.Button(Service.Localization.GetString("PopupEntry_FetchDataFailed")))
                     {

@@ -16,18 +16,18 @@ public class GameDataManager : IDisposable
         new Metric { Name = "aDPS", InternalName = "dps" },
         new Metric { Name = "nDPS", InternalName = "ndps" },
         new Metric { Name = "HPS", InternalName = "hps" },
-        new Metric { Name = Service.Localization.GetString("Healer Combined") + " rDPS", InternalName = "healercombinedrdps" },
-        new Metric { Name = Service.Localization.GetString("Healer Combined") + " aDPS", InternalName = "healercombineddps" },
-        new Metric { Name = Service.Localization.GetString("Healer Combined") + " nDPS", InternalName = "healercombinedndps" },
-        new Metric { Name = Service.Localization.GetString("Tank Combined") + " rDPS", InternalName = "tankcombinedrdps" },
-        new Metric { Name = Service.Localization.GetString("Tank Combined") + " aDPS", InternalName = "tankcombineddps" },
-        new Metric { Name = Service.Localization.GetString("Tank Combined") + " nDPS", InternalName = "tankcombinedndps" },
+        new Metric { Name = "Healer Combined rDPS", Abbreviation = "HC rDPS", InternalName = "healercombinedrdps" },
+        new Metric { Name = "Healer Combined aDPS", Abbreviation = "HC aDPS", InternalName = "healercombineddps" },
+        new Metric { Name = "Healer Combined nDPS", Abbreviation = "HC nDPS", InternalName = "healercombinedndps" },
+        new Metric { Name = "Tank Combined rDPS", Abbreviation = "TC rDPS", InternalName = "tankcombinedrdps" },
+        new Metric { Name = "Tank Combined aDPS", Abbreviation = "TC aDPS", InternalName = "tankcombineddps" },
+        new Metric { Name = "Tank Combined nDPS", Abbreviation = "TC nDPS", InternalName = "tankcombinedndps" },
     };
 
     public static readonly List<Partition> AvailablePartitions = new()
     {
-        new Partition { Name = "Standard", Id = -1 },
-        new Partition { Name = "Non-Standard", Id = -2 },
+        new Partition { Name = "Standard", Abbreviation = "S", Id = -1 },
+        new Partition { Name = "Non-Standard", Abbreviation = "N-S", Id = -2 },
     };
 
     public volatile bool IsDataReady;
@@ -69,7 +69,10 @@ public class GameDataManager : IDisposable
 
         this.IsDataReady = false;
         this.IsDataLoading = true;
-        Task.Run(async () => { await Service.FfLogsClient.FetchGameData().ConfigureAwait(false); }).ContinueWith(t =>
+        Task.Run(async () =>
+        {
+            await Service.FFLogsClient.FetchGameData().ConfigureAwait(false);
+        }).ContinueWith(t =>
         {
             if (!this.IsDataReady)
                 this.HasFailed = true;
@@ -111,47 +114,25 @@ public class GameDataManager : IDisposable
         return new List<Job>
         {
             GetDefaultJob(),
-            new() { Name = "Astrologian", Color = new Vector4(255, 231, 74, 255) / 255 },
-            new() { Name = "Bard", Color = new Vector4(145, 150, 186, 255) / 255 },
-            new() { Name = "Black Mage", Color = new Vector4(165, 121, 214, 255) / 255 },
-            new() { Name = "Dancer", Color = new Vector4(226, 176, 175, 255) / 255 },
-            new() { Name = "Dark Knight", Color = new Vector4(209, 38, 204, 255) / 255 },
-            new() { Name = "Dragoon", Color = new Vector4(65, 100, 205, 255) / 255 },
-            new() { Name = "Gunbreaker", Color = new Vector4(121, 109, 48, 255) / 255 },
-            new() { Name = "Machinist", Color = new Vector4(110, 225, 214, 255) / 255 },
-            new() { Name = "Monk", Color = new Vector4(214, 156, 0, 255) / 255 },
-            new() { Name = "Ninja", Color = new Vector4(175, 25, 100, 255) / 255 },
-            new() { Name = "Paladin", Color = new Vector4(168, 210, 230, 255) / 255 },
-            new() { Name = "Red Mage", Color = new Vector4(232, 123, 123, 255) / 255 },
-            new() { Name = "Reaper", Color = new Vector4(150, 90, 144, 255) / 255 },
-            new() { Name = "Sage", Color = new Vector4(128, 160, 240, 255) / 255 },
-            new() { Name = "Samurai", Color = new Vector4(228, 109, 4, 255) / 255 },
-            new() { Name = "Scholar", Color = new Vector4(134, 87, 255, 255) / 255 },
-            new() { Name = "Summoner", Color = new Vector4(45, 155, 120, 255) / 255 },
-            new() { Name = "Warrior", Color = new Vector4(207, 38, 33, 255) / 255 },
-            new() { Name = "White Mage", Color = new Vector4(255, 240, 220, 255) / 255 },
-
-            /*
-            new() { Name = "占星术士", Color = new Vector4(255, 231, 74, 255) / 255 }, // Astrologian
-            new() { Name = "吟游诗人", Color = new Vector4(145, 150, 186, 255) / 255 }, // Bard
-            new() { Name = "黑魔法师", Color = new Vector4(165, 121, 214, 255) / 255 }, // Black mage
-            new() { Name = "舞者", Color = new Vector4(226, 176, 175, 255) / 255 }, // Dancer
-            new() { Name = "暗黑骑士", Color = new Vector4(209, 38, 204, 255) / 255 }, // Dark Knight
-            new() { Name = "龙骑士", Color = new Vector4(65, 100, 205, 255) / 255 }, // Dragoon
-            new() { Name = "绝枪战士", Color = new Vector4(121, 109, 48, 255) / 255 }, // Gunbreaker
-            new() { Name = "机工士", Color = new Vector4(110, 225, 214, 255) / 255 }, // Machinist
-            new() { Name = "武僧", Color = new Vector4(214, 156, 0, 255) / 255 }, // Monk
-            new() { Name = "忍者", Color = new Vector4(175, 25, 100, 255) / 255 }, // Ninja
-            new() { Name = "骑士", Color = new Vector4(168, 210, 230, 255) / 255 }, // Paladin
-            new() { Name = "赤魔法师", Color = new Vector4(232, 123, 123, 255) / 255 }, // Red Mage
-            new() { Name = "钐镰客", Color = new Vector4(150, 90, 144, 255) / 255 }, // Reaper
-            new() { Name = "贤者", Color = new Vector4(128, 160, 240, 255) / 255 }, // Sage
-            new() { Name = "武士", Color = new Vector4(228, 109, 4, 255) / 255 }, // Samurai
-            new() { Name = "学者", Color = new Vector4(134, 87, 255, 255) / 255 }, // Scholar
-            new() { Name = "召唤师", Color = new Vector4(45, 155, 120, 255) / 255 }, // Summoner
-            new() { Name = "战士", Color = new Vector4(207, 38, 33, 255) / 255 }, // Warrior
-            new() { Name = "白魔法师", Color = new Vector4(255, 240, 220, 255) / 255 }, // White Mage
-            */
+            new() { Name = "Astrologian", Abbreviation = "AST", Color = new Vector4(255, 231, 74, 255) / 255 },
+            new() { Name = "Bard", Abbreviation = "BRD", Color = new Vector4(145, 150, 186, 255) / 255 },
+            new() { Name = "Black Mage", Abbreviation = "BLM", Color = new Vector4(165, 121, 214, 255) / 255 },
+            new() { Name = "Dancer", Abbreviation = "DNC", Color = new Vector4(226, 176, 175, 255) / 255 },
+            new() { Name = "Dark Knight", Abbreviation = "DRK", Color = new Vector4(209, 38, 204, 255) / 255 },
+            new() { Name = "Dragoon", Abbreviation = "DRG", Color = new Vector4(65, 100, 205, 255) / 255 },
+            new() { Name = "Gunbreaker", Abbreviation = "GNB", Color = new Vector4(121, 109, 48, 255) / 255 },
+            new() { Name = "Machinist", Abbreviation = "MCH", Color = new Vector4(110, 225, 214, 255) / 255 },
+            new() { Name = "Monk", Abbreviation = "MNK", Color = new Vector4(214, 156, 0, 255) / 255 },
+            new() { Name = "Ninja", Abbreviation = "NIN", Color = new Vector4(175, 25, 100, 255) / 255 },
+            new() { Name = "Paladin", Abbreviation = "PLD", Color = new Vector4(168, 210, 230, 255) / 255 },
+            new() { Name = "Red Mage", Abbreviation = "RDM", Color = new Vector4(232, 123, 123, 255) / 255 },
+            new() { Name = "Reaper", Abbreviation = "RPR", Color = new Vector4(150, 90, 144, 255) / 255 },
+            new() { Name = "Sage", Abbreviation = "SGE", Color = new Vector4(128, 160, 240, 255) / 255 },
+            new() { Name = "Samurai", Abbreviation = "SAM", Color = new Vector4(228, 109, 4, 255) / 255 },
+            new() { Name = "Scholar", Abbreviation = "SCH", Color = new Vector4(134, 87, 255, 255) / 255 },
+            new() { Name = "Summoner", Abbreviation = "SMN", Color = new Vector4(45, 155, 120, 255) / 255 },
+            new() { Name = "Warrior", Abbreviation = "WAR", Color = new Vector4(207, 38, 33, 255) / 255 },
+            new() { Name = "White Mage", Abbreviation = "WHM", Color = new Vector4(255, 240, 220, 255) / 255 },
         };
     }
     
