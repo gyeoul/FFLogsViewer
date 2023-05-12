@@ -23,7 +23,7 @@ public class CharDataManager
 
         if (!Service.Configuration.Style.IsLocalPlayerInPartyView)
         {
-            var index = currPartyMembers.FindIndex(member => $"{member.FirstName} {member.LastName}" == localPLayer?.Name.TextValue
+            var index = currPartyMembers.FindIndex(member => $"{member.FirstName}" == localPLayer?.Name.TextValue
                                                              && member.World == localPLayer.HomeWorld.GameData?.Name.RawString);
             if (index >= 0)
             {

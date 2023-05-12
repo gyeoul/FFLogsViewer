@@ -108,7 +108,7 @@ public class HeaderBar
 
                         if (ImGui.Selectable($"##PartyListSel{i}", false, ImGuiSelectableFlags.SpanAllColumns, new Vector2(0, iconSize)))
                         {
-                            Service.CharDataManager.DisplayedChar.FetchCharacter($"{partyMember.FirstName} {partyMember.LastName}@{partyMember.World}");
+                            Service.CharDataManager.DisplayedChar.FetchCharacter($"{partyMember.FirstName}@{partyMember.World}");
                         }
 
                         var icon = Service.GameDataManager.JobIconsManager.GetJobIcon(partyMember.JobId);
@@ -126,7 +126,7 @@ public class HeaderBar
                         ImGui.TableNextColumn();
 
                         ImGui.SetCursorPosY(middleCursorPosY);
-                        ImGui.Text($"{partyMember.FirstName} {partyMember.LastName}");
+                        ImGui.Text($"{partyMember.FirstName}");
 
                         ImGui.TableNextColumn();
 

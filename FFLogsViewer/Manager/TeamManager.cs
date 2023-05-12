@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using FFLogsViewer.Model;
 using FFXIVClientStructs.FFXIV.Client.Game.Group;
@@ -118,12 +118,12 @@ public class TeamManager
             return;
         }
 
-        var splitName = fullName.Split(' ');
+        /*var splitName = fullName.Split(' ');
         if (splitName.Length != 2)
         {
             return;
-        }
+        }*/
 
-        this.TeamList.Add(new TeamMember { FirstName = splitName[0], LastName = splitName[1], World = world.Name, JobId = jobId, IsInParty = isInParty });
+        this.TeamList.Add(new TeamMember { FirstName = fullName, World = world.Name, JobId = jobId, IsInParty = isInParty });
     }
 }
