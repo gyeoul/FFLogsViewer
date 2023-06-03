@@ -1,7 +1,7 @@
 # 安装
 1. 打开 Dalamud 设置
 2. 切到 测试版 窗口
-3. 在 自定义插件仓库 里添加该 ``https://raw.githubusercontent.com/NukoOoOoOoO/DalamudPlugins/dev/pluginmaster.json`` 链接，并且勾选启用
+3. 在 自定义插件仓库 里添加该 ``https://raw.githubusercontent.com/Nukoooo/DalamudPlugins/dev/pluginmaster.json`` 链接，并且勾选启用
 4. 点击保存并关闭
 5. 在 插件安装器 安装本插件
 
