@@ -176,6 +176,7 @@ public class CharData
                 }
 
                 this.CharError = CharacterError.CharacterNotFoundFFLogs;
+                Service.FFLogsClient.InvalidateCache(this);
                 return;
             }
 
@@ -185,6 +186,7 @@ public class CharData
             {
                 this.IsDataLoading = false;
                 this.CharError = CharacterError.HiddenLogs;
+                Service.FFLogsClient.InvalidateCache(this);
                 return;
             }
 
@@ -208,9 +210,10 @@ public class CharData
             if (!t.IsFaulted) return;
             if (t.Exception == null) return;
             this.CharError = CharacterError.NetworkError;
+            Service.FFLogsClient.InvalidateCache(this);
             foreach (var e in t.Exception.Flatten().InnerExceptions)
             {
-                PluginLog.Error(e, "Networking error");
+                PluginLog.Error(e, "Network error");
             }
         });
     }
@@ -246,13 +249,12 @@ public class CharData
         string clipboardRawText;
         try
         {
-            if (ImGui.GetClipboardText() == null)
+            clipboardRawText = ImGui.GetClipboardText();
+            if (clipboardRawText == null)
             {
                 this.CharError = CharacterError.ClipboardError;
                 return;
             }
-
-            clipboardRawText = ImGui.GetClipboardText();
         }
         catch
         {
@@ -278,12 +280,11 @@ public class CharData
 
     public void FetchCharacter(string fullName, ushort worldId)
     {
-        var world = Service.DataManager.GetExcelSheet<World>()
-                           ?.FirstOrDefault(x => x.RowId == worldId);
-
-        if (world == null)
+        var world = Service.DataManager.GetExcelSheet<World>()?.FirstOrDefault(x => x.RowId == worldId);
+        if (world is not { IsPublic: true })
         {
-            this.CharError = CharacterError.WorldNotFound;
+            PluginLog.Error($"{worldId}");
+            this.CharError = CharacterError.InvalidWorld;
             return;
         }
 

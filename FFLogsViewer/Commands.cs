@@ -13,7 +13,10 @@ public class Commands
     {
         Service.CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
         {
-            HelpMessage = "Toggle the main window. If given an argument, open the main window and search for a character name.",
+            HelpMessage = "Toggle the main window.\n" +
+                          "         If given \"party\" or \"p\" as argument, open the party view and refresh the party state.\n" +
+                          "         If given anything else, open the single view and search for a character name.\n" +
+                          "         Support all player character placeholders (<t>, <1>, <mo>, etc.).",
             ShowInHelp = true,
         });
 
@@ -38,6 +41,7 @@ public class Commands
 
     private static void OnCommand(string command, string args)
     {
+        var trimmedArgs = args.Trim();
         switch (command)
         {
             case CommandName when args.Equals("config", StringComparison.OrdinalIgnoreCase):
@@ -45,12 +49,20 @@ public class Commands
             case SettingsCommandName:
                 Service.ConfigWindow.Toggle();
                 break;
-            case CommandName when string.IsNullOrEmpty(args):
+            case CommandName when string.IsNullOrEmpty(trimmedArgs):
                 Service.MainWindow.Toggle();
                 break;
             case CommandName:
                 Service.MainWindow.Open();
-                Service.CharDataManager.DisplayedChar.FetchCharacter(args);
+                if (trimmedArgs.Equals("p", StringComparison.OrdinalIgnoreCase)
+                    || trimmedArgs.Equals("party", StringComparison.OrdinalIgnoreCase))
+                {
+                    Service.MainWindow.IsPartyView = true;
+                    Service.CharDataManager.UpdatePartyMembers();
+                    break;
+                }
+
+                Service.CharDataManager.DisplayedChar.FetchCharacter(trimmedArgs);
                 break;
         }
     }

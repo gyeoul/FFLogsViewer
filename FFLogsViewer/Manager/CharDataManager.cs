@@ -60,7 +60,6 @@ public class CharDataManager
     public CharDataManager()
     {
         var worlds = Service.DataManager.GetExcelSheet<World>()?.Where(world => world.IsPublic && world.DataCenter?.Value?.Region != 0);
-
         if (worlds == null)
         {
             throw new InvalidOperationException("Sheets weren't ready.");
@@ -71,11 +70,8 @@ public class CharDataManager
 
     public static string? GetRegionName(string worldName)
     {
-        var world = Service.DataManager.GetExcelSheet<World>()
-                              ?.FirstOrDefault(
-                                  x => x.Name.ToString().Equals(worldName, StringComparison.InvariantCultureIgnoreCase));
-
-        if (world == null)
+        var world = Service.DataManager.GetExcelSheet<World>()?.FirstOrDefault(x => x.Name.ToString().Equals(worldName, StringComparison.InvariantCultureIgnoreCase));
+        if (world is not { IsPublic: true })
         {
             return null;
         }
@@ -91,17 +87,13 @@ public class CharDataManager
             if (placeholder != null && placeholder->IsCharacter())
             {
                 var character = (Character*)placeholder;
+                var world = Service.DataManager.GetExcelSheet<World>()
+                                   ?.FirstOrDefault(x => x.RowId == character->HomeWorld);
 
-                if (placeholder->Name != null && character->HomeWorld != 0 && character->HomeWorld != 65535)
+                if (world is { IsPublic: true } && placeholder->Name != null)
                 {
-                    var world = Service.DataManager.GetExcelSheet<World>()
-                        ?.FirstOrDefault(x => x.RowId == character->HomeWorld);
-
-                    if (world != null)
-                    {
-                        var name = $"{Util.ReadSeString(placeholder->Name)}@{world.Name}";
-                        return name;
-                    }
+                    var name = $"{Util.ReadSeString(placeholder->Name)}@{world.Name}";
+                    return name;
                 }
             }
         }

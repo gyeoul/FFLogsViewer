@@ -1,8 +1,8 @@
 using System;
 using System.Numerics;
+using Dalamud.Game.ClientState.Keys;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
-using Dalamud.Interface.Style;
 using FFLogsViewer.Manager;
 using ImGuiNET;
 
@@ -16,15 +16,36 @@ public class MenuBar
 
         if (ImGui.BeginMenuBar())
         {
+            string clearHoverTooltip;
             ImGui.PushFont(UiBuilder.IconFont);
-            if (ImGui.MenuItem(FontAwesomeIcon.Eraser.ToIconString()))
+            if (Service.Configuration.IsCachingEnabled && Service.KeyState[VirtualKey.CONTROL])
             {
-                Service.CharDataManager.Reset();
-                Service.MainWindow.ResetSize();
+                if (ImGui.MenuItem(FontAwesomeIcon.Trash.ToIconString()))
+                {
+                    Service.FFLogsClient.ClearCache();
+                    Service.CharDataManager.FetchLogs();
+                    Service.MainWindow.ResetSize();
+                }
+
+                clearHoverTooltip = "Clear cache and refresh current logs";
+            }
+            else
+            {
+                if (ImGui.MenuItem(FontAwesomeIcon.Eraser.ToIconString()))
+                {
+                    Service.CharDataManager.Reset();
+                    Service.MainWindow.ResetSize();
+                }
+
+                clearHoverTooltip = "Clear current view";
+                if (Service.Configuration.IsCachingEnabled)
+                {
+                    clearHoverTooltip += " (hold ctrl to clear cache)";
+                }
             }
 
             ImGui.PopFont();
-            Util.SetHoverTooltip(Service.Localization.GetString("Clear"));
+            Util.SetHoverTooltip(clearHoverTooltip);
 
             ImGui.PushFont(UiBuilder.IconFont);
             if (ImGui.MenuItem(FontAwesomeIcon.Cog.ToIconString()))
@@ -42,6 +63,12 @@ public class MenuBar
                 if (Service.FFLogsClient.IsTokenValid)
                 {
                     Service.MainWindow.IsPartyView = !Service.MainWindow.IsPartyView;
+                    if (Service.MainWindow.IsPartyView)
+                    {
+                        Service.CharDataManager.UpdatePartyMembers();
+                    }
+
+                    Service.MainWindow.ResetSize();
                 }
             }
 
@@ -49,15 +76,15 @@ public class MenuBar
             Util.SetHoverTooltip(Service.MainWindow.IsPartyView ? "Swap to single view" : "Swap to party view");
 
             ImGui.PushFont(UiBuilder.IconFont);
-            if (Service.Configuration.IsCachingEnabled && ImGui.MenuItem(FontAwesomeIcon.Trash.ToIconString()))
+            if (ImGui.MenuItem(FontAwesomeIcon.History.ToIconString()))
             {
-                Service.FFLogsClient.ClearCache();
-                Service.CharDataManager.FetchLogs();
-                Service.MainWindow.ResetSize();
+                ImGui.OpenPopup("##History");
             }
 
             ImGui.PopFont();
-            Util.SetHoverTooltip("Clear cache and refresh current logs");
+            Util.SetHoverTooltip("History");
+
+            DrawHistoryPopup();
 
             var hasTmpSettingChanged = false;
 
@@ -206,5 +233,66 @@ public class MenuBar
         }
 
         ImGui.PopStyleVar();
+    }
+
+    public static void DrawHistoryPopup()
+    {
+        if (!ImGui.BeginPopup("##History", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.AlwaysAutoResize))
+        {
+            return;
+        }
+
+        var history = Service.HistoryManager.History;
+        if (history.Count != 0)
+        {
+            var tableHeight = 12 * (25 * ImGuiHelpers.GlobalScale);
+            if (history.Count < 12)
+            {
+                tableHeight = -1;
+            }
+
+            if (ImGui.BeginTable("##HistoryTable", 3, ImGuiTableFlags.RowBg | ImGuiTableFlags.ScrollY, new Vector2(-1, tableHeight)))
+            {
+                for (var i = 0; i < history.Count; i++)
+                {
+                    if (i != 0)
+                    {
+                        ImGui.TableNextRow();
+                    }
+
+                    ImGui.TableNextColumn();
+
+                    var historyEntry = history[i];
+                    if (ImGui.Selectable($"##PartyListSel{i}", false, ImGuiSelectableFlags.SpanAllColumns, new Vector2(0, 25 * ImGuiHelpers.GlobalScale)))
+                    {
+                        Service.CharDataManager.DisplayedChar.FetchCharacter($"{historyEntry.FirstName} {historyEntry.LastName}@{historyEntry.WorldName}");
+                        ImGui.CloseCurrentPopup();
+                    }
+
+                    ImGui.SameLine();
+                    ImGui.AlignTextToFramePadding();
+                    ImGui.Text($"{historyEntry.LastSeen.ToShortDateString()} {historyEntry.LastSeen.ToShortTimeString()}");
+
+                    ImGui.TableNextColumn();
+
+                    ImGui.Text($"{historyEntry.FirstName} {historyEntry.LastName}");
+
+                    ImGui.TableNextColumn();
+
+                    ImGui.Text(historyEntry.WorldName);
+
+                    ImGui.SameLine();
+                    ImGui.Dummy(new Vector2(ImGui.GetStyle().ScrollbarSize));
+                }
+
+                ImGui.EndTable();
+            }
+        }
+        else
+        {
+            ImGui.Text("No history");
+        }
+
+        ImGui.EndPopup();
     }
 }

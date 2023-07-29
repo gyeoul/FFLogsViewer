@@ -51,7 +51,7 @@ public class ContextMenu : IDisposable
             case "ContentMemberList": // Eureka/Bozja/...
             case "BeginnerChatList":
             case "BlackList":
-                return args.Text != null && args.ObjectWorld != 0 && args.ObjectWorld != 65535;
+                return args.Text != null && (Service.DataManager.GetExcelSheet<World>()?.FirstOrDefault(x => x.RowId == args.ObjectWorld)?.IsPublic ?? false);
 
             default:
                 return false;
@@ -60,11 +60,11 @@ public class ContextMenu : IDisposable
 
     private static void SearchPlayerFromMenu(BaseContextMenuArgs args)
     {
-        var world = Service.DataManager.GetExcelSheet<World>()
-                           ?.FirstOrDefault(x => x.RowId == args.ObjectWorld);
-
-        if (world == null)
+        var world = Service.DataManager.GetExcelSheet<World>()?.FirstOrDefault(x => x.RowId == args.ObjectWorld);
+        if (world is not { IsPublic: true })
+        {
             return;
+        }
 
         var playerName = $"{args.Text}@{world.Name}";
 
@@ -81,13 +81,17 @@ public class ContextMenu : IDisposable
 
     private static void OnOpenContextMenu(GameObjectContextMenuOpenArgs args)
     {
-        if (!IsMenuValid(args))
+        if (!Service.Interface.UiBuilder.ShouldModifyUi || !IsMenuValid(args))
+        {
             return;
+        }
 
         if (Service.Configuration.ContextMenuStreamer)
         {
             if (!Service.MainWindow.IsOpen)
+            {
                 return;
+            }
 
             SearchPlayerFromMenu(args);
         }

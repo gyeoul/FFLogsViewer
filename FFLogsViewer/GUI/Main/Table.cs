@@ -98,7 +98,7 @@ public class Table
                 encounterName += " (N/A)";
                 hoverMessage = "No data available.\n" +
                                "\n" +
-                               "This error is expected when the encounter is a recent addition to the layout or not yet listed on FF Logs.\n" +
+                               "This error is expected when the encounter is a recent addition to the layout or is not yet listed on FF Logs.\n" +
                                "If neither of these is the case, please " +
                                (Service.Configuration.IsDefaultLayout
                                     ? "report the issue on GitHub."
@@ -210,6 +210,20 @@ public class Table
         return !Service.Configuration.Layout.Exists(entry => entry.SwapId == swapId && entry.SwapNumber > swapNumber);
     }
 
+    private static void DrawPartyViewWarning()
+    {
+        if (Service.CharDataManager.PartyMembers.Count == 0)
+        {
+            ImGui.Text("Use");
+            ImGui.PushFont(UiBuilder.IconFont);
+            ImGui.SameLine();
+            ImGui.Text(FontAwesomeIcon.Redo.ToIconString());
+            ImGui.PopFont();
+            ImGui.SameLine();
+            ImGui.Text("to refresh the party state.");
+        }
+    }
+
     private void DrawPartyView()
     {
         var configErrorMessage = Service.Configuration.Layout.Count == 0 ? "You have no layout set up." : null;
@@ -272,38 +286,7 @@ public class Table
         var currentParty = Service.CharDataManager.PartyMembers;
         var displayedEntries = this.GetDisplayedEntries();
 
-        ImGui.SameLine();
-        var metricAbbreviation = Util.GetMetricAbbreviation(currentParty.FirstOrDefault());
-        ImGui.SetNextItemWidth(Service.Configuration.Stats.Where(stat => stat.IsEnabled).Select(metric => ImGui.CalcTextSize(metric.GetFinalAlias(metricAbbreviation)).X).Max()
-                                                                                                + (30 * ImGuiHelpers.GlobalScale)
-                                                                                                + ImGui.CalcTextSize(" (★)").X);
-
-        var comboPreview = this.CurrentStat.GetFinalAlias(metricAbbreviation);
-        if (Service.Configuration.DefaultStatTypePartyView == this.CurrentStat.Type)
-        {
-            comboPreview += " (★)";
-        }
-
-        if (ImGui.BeginCombo("##EncounterLayoutCombo", comboPreview, ImGuiComboFlags.HeightLargest))
-        {
-            foreach (var stat in Service.Configuration.Stats.Where(stat => stat.IsEnabled))
-            {
-                var statName = stat.Name;
-                if (Service.Configuration.DefaultStatTypePartyView == stat.Type)
-                {
-                    statName += " (★)";
-                }
-
-                if (ImGui.Selectable(statName))
-                {
-                    this.CurrentStat = stat;
-                }
-            }
-
-            ImGui.EndCombo();
-        }
-
-        this.DrawPartyViewArrows();
+        this.DrawEncounterHeader();
 
         if (ImGui.BeginTable(
                 "##MainWindowTablePartyViewEncounterLayout",
@@ -386,6 +369,12 @@ public class Table
                     {
                         ImGui.TableNextColumn();
                         var charData = i < currentParty.Count ? currentParty[i] : null;
+                        if (charData == null)
+                        {
+                            Util.CenterText("-");
+                            continue;
+                        }
+
                         if (charData is { IsDataLoading: true })
                         {
                             Util.CenterText("...");
@@ -409,6 +398,43 @@ public class Table
 
             ImGui.EndTable();
         }
+    }
+
+    private void DrawEncounterHeader()
+    {
+        ImGui.SameLine();
+        var metricAbbreviation = Util.GetMetricAbbreviation(Service.CharDataManager.PartyMembers.FirstOrDefault());
+        ImGui.SetNextItemWidth(Service.Configuration.Stats.Where(stat => stat.IsEnabled).Select(metric => ImGui.CalcTextSize(metric.GetFinalAlias(metricAbbreviation)).X).Max()
+                               + (30 * ImGuiHelpers.GlobalScale)
+                               + ImGui.CalcTextSize(" (★)").X);
+
+        var comboPreview = this.CurrentStat.GetFinalAlias(metricAbbreviation);
+        if (Service.Configuration.DefaultStatTypePartyView == this.CurrentStat.Type)
+        {
+            comboPreview += " (★)";
+        }
+
+        if (ImGui.BeginCombo("##EncounterLayoutCombo", comboPreview, ImGuiComboFlags.HeightLargest))
+        {
+            foreach (var stat in Service.Configuration.Stats.Where(stat => stat.IsEnabled))
+            {
+                var statName = stat.Name;
+                if (Service.Configuration.DefaultStatTypePartyView == stat.Type)
+                {
+                    statName += " (★)";
+                }
+
+                if (ImGui.Selectable(statName))
+                {
+                    this.CurrentStat = stat;
+                }
+            }
+
+            ImGui.EndCombo();
+        }
+
+        this.DrawPartyViewArrows();
+        DrawPartyViewWarning();
     }
 
     private void DrawStatLayoutHeader()
@@ -459,6 +485,7 @@ public class Table
         }
 
         this.DrawPartyViewArrows();
+        DrawPartyViewWarning();
     }
 
     private void DrawPartyViewArrows()
@@ -555,6 +582,12 @@ public class Table
                 {
                     ImGui.TableNextColumn();
                     ImGui.SetCursorPosY(middleCursorPosY);
+
+                    if (charData == null)
+                    {
+                        Util.CenterText("-");
+                        continue;
+                    }
 
                     if (charData is { IsDataLoading: true })
                     {
@@ -654,7 +687,8 @@ public class Table
         }
         else
         {
-            if (ImGui.Selectable($"{displayedName}##{row}"))
+            //  == mouse character from game's font
+            if (ImGui.Selectable($"{displayedName} {(entry.Type == LayoutEntryType.Header ? "" : string.Empty)}##{row}"))
             {
                 this.Swap(entry.SwapId, entry.SwapNumber);
             }

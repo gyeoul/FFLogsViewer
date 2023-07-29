@@ -21,8 +21,9 @@ public class MainWindow : Window
         : base("FFLogsViewer##FFLogsViewerMainWindow")
     {
         this.RespectCloseHotkey = Service.Configuration.Style.IsCloseHotkeyRespected;
-
         this.Flags = Service.Configuration.Style.MainWindowFlags;
+
+        this.IsPartyView = Service.Configuration.IsDefaultViewParty;
 
         this.ResetSize();
     }
@@ -60,7 +61,7 @@ public class MainWindow : Window
 
     public override void Draw()
     {
-        if (this.IsPartyView && !Service.FFLogsClient.IsTokenValid)
+        if (!Service.FFLogsClient.IsTokenValid && this.IsPartyView)
         {
             this.IsPartyView = false;
         }

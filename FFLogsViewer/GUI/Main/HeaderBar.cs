@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
-using Dalamud.Interface.Colors;
 using ImGuiNET;
 
 namespace FFLogsViewer.GUI.Main;
@@ -84,66 +83,7 @@ public class HeaderBar
 
         Util.SetHoverTooltip(Service.Localization.GetString("Main_PartyMembers"));
 
-        if (ImGui.BeginPopup("##TeamList", ImGuiWindowFlags.NoMove))
-        {
-            Util.UpdateDelayed(this.partyListStopwatch, TimeSpan.FromSeconds(1), Service.TeamManager.UpdateTeamList);
-
-            var partyList = Service.TeamManager.TeamList;
-            if (partyList.Count != 0)
-            {
-                if (ImGui.BeginTable("##PartyListTable", 3, ImGuiTableFlags.RowBg))
-                {
-                    for (var i = 0; i < partyList.Count; i++)
-                    {
-                        if (i != 0)
-                        {
-                            ImGui.TableNextRow();
-                        }
-
-                        ImGui.TableNextColumn();
-
-                        var partyMember = partyList[i];
-                        var iconSize = 25 * ImGuiHelpers.GlobalScale;
-                        var middleCursorPosY = ImGui.GetCursorPosY() + (iconSize / 2) - (ImGui.GetFontSize() / 2);
-
-                        if (ImGui.Selectable($"##PartyListSel{i}", false, ImGuiSelectableFlags.SpanAllColumns, new Vector2(0, iconSize)))
-                        {
-                            Service.CharDataManager.DisplayedChar.FetchCharacter($"{partyMember.FirstName}@{partyMember.World}");
-                        }
-
-                        var icon = Service.GameDataManager.JobIconsManager.GetJobIcon(partyMember.JobId);
-                        if (icon != null)
-                        {
-                            ImGui.SameLine();
-                            ImGui.Image(icon.ImGuiHandle, new Vector2(iconSize));
-                        }
-                        else
-                        {
-                            ImGui.SetCursorPosY(middleCursorPosY);
-                            ImGui.Text("(?)");
-                        }
-
-                        ImGui.TableNextColumn();
-
-                        ImGui.SetCursorPosY(middleCursorPosY);
-                        ImGui.Text($"{partyMember.FirstName}");
-
-                        ImGui.TableNextColumn();
-
-                        ImGui.SetCursorPosY(middleCursorPosY);
-                        ImGui.Text(partyMember.World + " ");
-                    }
-
-                    ImGui.EndTable();
-                }
-            }
-            else
-            {
-                ImGui.Text(Service.Localization.GetString("Main_NoPartyMember"));
-            }
-
-            ImGui.EndPopup();
-        }
+        this.DrawPartyMembersPopup();
 
         ImGui.PopStyleVar();
 
@@ -191,7 +131,17 @@ public class HeaderBar
         }
         else
         {
-            Util.CenterText(Util.GetErrorMessage(Service.CharDataManager.DisplayedChar), ImGuiColors.DalamudRed);
+            if (Util.ShouldErrorBeClickable(Service.CharDataManager.DisplayedChar))
+            {
+                if (Util.CenterSelectableError(Service.CharDataManager.DisplayedChar, "Click to open on FF Logs"))
+                {
+                    Util.OpenLink(Service.CharDataManager.DisplayedChar);
+                }
+            }
+            else
+            {
+                Util.CenterError(Service.CharDataManager.DisplayedChar);
+            }
         }
 
         if (Service.Configuration.Layout.Count == 0)
@@ -231,5 +181,71 @@ public class HeaderBar
     private static float GetMinWindowSize()
     {
         return ((GetMinInputWidth() + (ImGui.GetStyle().ItemSpacing.X * 2)) * 3) + GetButtonsWidth();
+    }
+
+    private void DrawPartyMembersPopup()
+    {
+        if (!ImGui.BeginPopup("##TeamList", ImGuiWindowFlags.NoMove))
+        {
+            return;
+        }
+
+        Util.UpdateDelayed(this.partyListStopwatch, TimeSpan.FromSeconds(1), Service.TeamManager.UpdateTeamList);
+
+        var partyList = Service.TeamManager.TeamList;
+        if (partyList.Count != 0)
+        {
+            if (ImGui.BeginTable("##PartyListTable", 3, ImGuiTableFlags.RowBg))
+            {
+                for (var i = 0; i < partyList.Count; i++)
+                {
+                    if (i != 0)
+                    {
+                        ImGui.TableNextRow();
+                    }
+
+                    ImGui.TableNextColumn();
+
+                    var partyMember = partyList[i];
+                    var iconSize = 25 * ImGuiHelpers.GlobalScale;
+                    var middleCursorPosY = ImGui.GetCursorPosY() + (iconSize / 2) - (ImGui.GetFontSize() / 2);
+
+                    if (ImGui.Selectable($"##PartyListSel{i}", false, ImGuiSelectableFlags.SpanAllColumns, new Vector2(0, iconSize)))
+                    {
+                        Service.CharDataManager.DisplayedChar.FetchCharacter($"{partyMember.FirstName}@{partyMember.World}");
+                    }
+
+                    var icon = Service.GameDataManager.JobIconsManager.GetJobIcon(partyMember.JobId);
+                    if (icon != null)
+                    {
+                        ImGui.SameLine();
+                        ImGui.Image(icon.ImGuiHandle, new Vector2(iconSize));
+                    }
+                    else
+                    {
+                        ImGui.SetCursorPosY(middleCursorPosY);
+                        ImGui.Text("(?)");
+                    }
+
+                    ImGui.TableNextColumn();
+
+                    ImGui.SetCursorPosY(middleCursorPosY);
+                    ImGui.Text($"{partyMember.FirstName}");
+
+                    ImGui.TableNextColumn();
+
+                    ImGui.SetCursorPosY(middleCursorPosY);
+                    ImGui.Text(partyMember.World + " ");
+                }
+
+                ImGui.EndTable();
+            }
+        }
+        else
+        {
+            ImGui.Text("No party member found");
+        }
+
+        ImGui.EndPopup();
     }
 }

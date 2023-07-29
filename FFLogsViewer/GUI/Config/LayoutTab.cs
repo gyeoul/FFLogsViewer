@@ -80,7 +80,6 @@ public class LayoutTab
                 if (ImGui.Button("Yes##ResetLayout"))
                 {
                     Service.Configuration.SetDefaultLayout();
-                    Service.Configuration.IsDefaultLayout = true;
                     Service.Configuration.Save();
                     Service.MainWindow.ResetSize();
                     Service.MainWindow.ResetSwapGroups();
