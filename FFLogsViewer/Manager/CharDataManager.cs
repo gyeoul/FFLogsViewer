@@ -70,11 +70,11 @@ public class CharDataManager
 
     public static string? GetRegionName(string worldName)
     {
-        var world = Service.DataManager.GetExcelSheet<World>()?.FirstOrDefault(x => x.Name.ToString().Equals(worldName, StringComparison.InvariantCultureIgnoreCase));
+        /*var world = Service.DataManager.GetExcelSheet<World>()?.FirstOrDefault(x => x.Name.ToString().Equals(worldName, StringComparison.InvariantCultureIgnoreCase));
         if (world is not { IsPublic: true })
         {
             return null;
-        }
+        }*/
 
         return "CN";
     }
