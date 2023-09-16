@@ -27,16 +27,16 @@ public class TeamManager
             if (cwProxy->IsInCrossRealmParty != 0)
             {
                 var localIndex = cwProxy->LocalPlayerGroupIndex;
-                this.AddMembersFromCRGroup(cwProxy->CrossRealmGroupSpan[localIndex], true);
+                this.AddMembersFromCRGroup(cwProxy->CrossRealmGroupArraySpan[localIndex], true);
 
-                for (var i = 0; i < cwProxy->CrossRealmGroupSpan.Length; i++)
+                for (var i = 0; i < cwProxy->CrossRealmGroupArraySpan.Length; i++)
                 {
                     if (i == localIndex)
                     {
                         continue;
                     }
 
-                    this.AddMembersFromCRGroup(cwProxy->CrossRealmGroupSpan[i]);
+                    this.AddMembersFromCRGroup(cwProxy->CrossRealmGroupArraySpan[i]);
                 }
             }
         }
@@ -53,25 +53,25 @@ public class TeamManager
 
     private unsafe void AddMembersFromCRGroup(CrossRealmGroup crossRealmGroup, bool isLocalPlayerGroup = false)
     {
-        foreach (var groupMember in crossRealmGroup.GroupMemberSpan)
+        for (var i = 0; i < crossRealmGroup.GroupMemberCount; i++)
         {
+            var groupMember = crossRealmGroup.GroupMembersSpan[i];
             this.AddTeamMember(Util.ReadSeString(groupMember.Name).TextValue, (ushort)groupMember.HomeWorld, groupMember.ClassJobId, isLocalPlayerGroup);
         }
     }
 
     private unsafe void AddMembersFromGroupManager(GroupManager* groupManager)
     {
-        // Use CS struct when updated in Dalamud
-        var partyMemberList = AgentModule.Instance()->GetAgentHUD()->PartyMemberList;
+        var partyMemberList = AgentModule.Instance()->GetAgentHUD()->PartyMemberListSpan;
         var groupManagerIndexLeft = Enumerable.Range(0, groupManager->MemberCount).ToList();
-        for (var i = 0; i < 8; i++)
+
+        for (var i = 0; i < groupManager->MemberCount; i++)
         {
-            var targetOffset = i * sizeof(HudPartyMember);
-            var hudPartyMember = (HudPartyMember*)(partyMemberList + targetOffset);
-            var hudPartyMemberName = hudPartyMember->Name;
-            if (hudPartyMemberName != null)
+            var hudPartyMember = partyMemberList[i];
+            var hudPartyMemberNameRaw = hudPartyMember.Name;
+            if (hudPartyMemberNameRaw != null)
             {
-                var hudName = Util.ReadSeString(hudPartyMemberName).TextValue;
+                var hudPartyMemberName = Util.ReadSeString(hudPartyMemberNameRaw).TextValue;
                 for (var j = 0; j < groupManager->MemberCount; j++)
                 {
                     // handle duplicate names from different worlds
@@ -84,7 +84,7 @@ public class TeamManager
                     if (partyMember != null)
                     {
                         var partyMemberName = Util.ReadSeString(partyMember->Name).TextValue;
-                        if (hudName.Equals(partyMemberName))
+                        if (hudPartyMemberName.Equals(partyMemberName))
                         {
                             this.AddTeamMember(partyMemberName, partyMember->HomeWorld, partyMember->ClassJob, true);
                             groupManagerIndexLeft.Remove(j);
