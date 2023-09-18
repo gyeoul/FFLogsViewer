@@ -13,12 +13,12 @@
 ```
 
 为了能在插件窗口上查看logs记录，你需要获取一个API Client，在插件配置窗口里可以找到教程。如果你选择了在浏览器中打开，那就不需要API client。
-![image](https://github.com/Aireil/FFLogsViewer/raw/master/res/ui.png)
-
+![image](https://github.com/Aireil/FFLogsViewer/raw/master/res/image1.png)
 ## 右键菜单
 
 在每个有名字的地方都加一个右键菜单。
 
-![image](https://github.com/Aireil/FFLogsViewer/raw/master/res/contextMenu1.png)
-![image](https://github.com/Aireil/FFLogsViewer/raw/master/res/contextMenu2.png)
+![image](https://github.com/Aireil/FFLogsViewer/raw/master/res/custom.png)
+
+![image](https://github.com/Aireil/FFLogsViewer/raw/master/res/image2.png)
 
