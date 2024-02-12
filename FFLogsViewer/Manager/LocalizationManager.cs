@@ -22,16 +22,16 @@ public class LocalizationManager
         LoadStrings(Language.English);
         LoadStrings(Language.ChineseSimplified);
 
-        currentLanguage = Service.DataManager.Language == ClientLanguage.ChineseSimplified
-                              ? Language.ChineseSimplified
-                              : Language.English;
+        this.currentLanguage = Service.DataManager.Language == (ClientLanguage)4
+                                   ? Language.ChineseSimplified
+                                   : Language.English;
     }
 
     public List<Language> AvailableLanguages { get; } = new();
 
     public string? GetString(string? key)
     {
-        return _strings[currentLanguage].ContainsKey(key) ? _strings[currentLanguage][key] : key;
+        return this._strings[this.currentLanguage].ContainsKey(key) ? this._strings[this.currentLanguage][key] : key;
     }
 
     private void LoadStrings(Language lang)
@@ -40,9 +40,9 @@ public class LocalizationManager
         {
             Language.English => Resources.en,
             Language.ChineseSimplified => Resources.zh_CN,
-            _ => Resources.en
+            _ => Resources.en,
         };
 
-        _strings[lang] = JsonConvert.DeserializeObject<Dictionary<string, string>>(str)!;
+        this._strings[lang] = JsonConvert.DeserializeObject<Dictionary<string, string>>(str)!;
     }
 }

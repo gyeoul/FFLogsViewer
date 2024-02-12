@@ -2,6 +2,7 @@ using Dalamud.ContextMenu;
 using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin;
+using FFLogsViewer.API;
 using FFLogsViewer.GUI.Config;
 using FFLogsViewer.GUI.Main;
 using FFLogsViewer.Manager;
@@ -11,10 +12,9 @@ namespace FFLogsViewer;
 // ReSharper disable once UnusedType.Global
 public sealed class FFLogsViewer : IDalamudPlugin
 {
-    public string Name => "FFLogsViewer";
-
     private readonly WindowSystem windowSystem;
     private readonly ContextMenu contextMenu;
+    private readonly FFLogsViewerProvider ffLogsViewerProvider;
 
     public FFLogsViewer(
         [RequiredVersion("1.0")] DalamudPluginInterface pluginInterface)
@@ -23,10 +23,8 @@ public sealed class FFLogsViewer : IDalamudPlugin
 
         Service.Configuration = pluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
         Service.Configuration.Initialize();
-
-        IPC.Initialize();
+        
         Service.Localization = new LocalizationManager();
-
         Service.Commands = new Commands();
         Service.CharDataManager = new CharDataManager();
         Service.GameDataManager = new GameDataManager();
@@ -42,8 +40,10 @@ public sealed class FFLogsViewer : IDalamudPlugin
         this.windowSystem.AddWindow(Service.ConfigWindow);
         this.windowSystem.AddWindow(Service.MainWindow);
 
-        Service.ContextMenu = new DalamudContextMenu();
+        Service.ContextMenu = new DalamudContextMenu(pluginInterface);
         this.contextMenu = new ContextMenu();
+
+        this.ffLogsViewerProvider = new FFLogsViewerProvider(pluginInterface, new FFLogsViewerAPI());
 
         Service.Interface.UiBuilder.OpenMainUi += OpenMainUi;
         Service.Interface.UiBuilder.OpenConfigUi += OpenConfigUi;
@@ -52,11 +52,10 @@ public sealed class FFLogsViewer : IDalamudPlugin
 
     public void Dispose()
     {
-        IPC.Dispose();
+        this.ffLogsViewerProvider.Dispose();
         Commands.Dispose();
         Service.ContextMenu.Dispose();
         this.contextMenu.Dispose();
-        Service.GameDataManager.Dispose();
         Service.OpenWithManager.Dispose();
 
         Service.Interface.UiBuilder.OpenMainUi -= OpenMainUi;

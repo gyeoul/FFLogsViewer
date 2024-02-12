@@ -5,7 +5,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.SubKinds;
-using Dalamud.Logging;
 using FFLogsViewer.Manager;
 using FFLogsViewer.Model;
 using ImGuiNET;
@@ -23,7 +22,8 @@ public class CharData
     public string RegionName = string.Empty;
     public string LoadedFirstName = string.Empty;
     public string LoadedWorldName = string.Empty;
-    public uint JobId; // only used in party view
+    public uint JobId;
+    public uint LoadedJobId;
     public volatile bool IsDataLoading;
     public volatile bool IsDataReady;
 
@@ -71,7 +71,7 @@ public class CharData
         if (playerCharacter.HomeWorld.GameData?.Name == null)
         {
             this.CharError = CharacterError.GenericError;
-            PluginLog.Error("SetInfo character world was null");
+            Service.PluginLog.Error("SetInfo character world was null");
             return false;
         }
 
@@ -126,6 +126,7 @@ public class CharData
         this.RegionName = regionName;
 
         this.IsDataLoading = true;
+        this.SetJobId();
         this.ResetData();
         Task.Run(async () =>
         {
@@ -135,7 +136,7 @@ public class CharData
                 this.IsDataLoading = false;
                 Service.FFLogsClient.InvalidateCache(this);
                 this.CharError = CharacterError.Unreachable;
-                PluginLog.Error("rawData is null");
+                Service.PluginLog.Error("rawData is null");
                 return;
             }
 
@@ -149,7 +150,7 @@ public class CharData
                     {
                         this.CharError = CharacterError.Unauthenticated;
                         Service.FFLogsClient.InvalidateCache(this);
-                        PluginLog.Information($"Unauthenticated: {rawData}");
+                        Service.PluginLog.Information($"Unauthenticated: {rawData}");
                         return;
                     }
 
@@ -157,13 +158,13 @@ public class CharData
                     {
                         this.CharError = CharacterError.OutOfPoints;
                         Service.FFLogsClient.InvalidateCache(this);
-                        PluginLog.Information($"Ran out of points: {rawData}");
+                        Service.PluginLog.Information($"Ran out of points: {rawData}");
                         return;
                     }
 
                     this.CharError = CharacterError.GenericError;
                     Service.FFLogsClient.InvalidateCache(this);
-                    PluginLog.Information($"Generic error: {rawData}");
+                    Service.PluginLog.Information($"Generic error: {rawData}");
                     return;
                 }
 
@@ -171,7 +172,7 @@ public class CharData
                 {
                     this.CharError = CharacterError.MalformedQuery;
                     Service.FFLogsClient.InvalidateCache(this);
-                    PluginLog.Information($"Malformed GraphQL query: {rawData}");
+                    Service.PluginLog.Information($"Malformed GraphQL query: {rawData}");
                     return;
                 }
 
@@ -204,6 +205,16 @@ public class CharData
             this.IsDataReady = true;
             this.LoadedFirstName = this.FirstName;
             this.LoadedWorldName = this.WorldName;
+            if (Service.MainWindow.Job.Name != "All jobs")
+            {
+                this.LoadedJobId = Service.MainWindow.Job.Name == "Current job"
+                                       ? this.JobId
+                                       : Service.MainWindow.Job.Id;
+            }
+            else
+            {
+                this.LoadedJobId = 0;
+            }
         }).ContinueWith(t =>
         {
             Service.MainWindow.ResetSize();
@@ -214,7 +225,7 @@ public class CharData
             Service.FFLogsClient.InvalidateCache(this);
             foreach (var e in t.Exception.Flatten().InnerExceptions)
             {
-                PluginLog.Error(e, "Network error");
+                Service.PluginLog.Error(e, "Network error");
             }
         });
     }
@@ -227,6 +238,15 @@ public class CharData
             rawText = placeholder;
         }
 
+        // TODO: 是否需要给国服更改
+        /*
+        rawText = rawText.Replace("'s party for", " ");
+        rawText = rawText.Replace("You join", " ");
+        rawText = Regex.Replace(rawText, @"\[.*?\]", " ");
+        rawText = Regex.Replace(rawText, "[^A-Za-z '-]", " ");
+        rawText = string.Concat(rawText.Select(x => char.IsUpper(x) ? " " + x : x.ToString())).TrimStart(' ');
+        rawText = Regex.Replace(rawText, @"\s+", " ");
+        */
         if (!Regex.IsMatch(rawText, "@[^\x00-\x7F]{1,6}"))
             return false;
 
@@ -284,7 +304,7 @@ public class CharData
         var world = Service.DataManager.GetExcelSheet<World>()?.FirstOrDefault(x => x.RowId == worldId);
         if (world is not { IsPublic: true })
         {
-            PluginLog.Error($"{worldId}");
+            Service.PluginLog.Error($"{worldId}");
             this.CharError = CharacterError.InvalidWorld;
             return;
         }
@@ -298,6 +318,43 @@ public class CharData
         this.Encounters = new List<Encounter>();
         this.IsDataReady = false;
         this.LoadedMetric = null;
+    }
+
+    private void SetJobId()
+    {
+        if (Service.MainWindow.IsPartyView)
+        {
+            return; // job id was just set from the team list
+        }
+
+        // search in the object table first as it updates faster and is always accurate
+        var fullName = $"{this.FirstName}";
+        for (var i = 0; i < 200; i += 2)
+        {
+            var obj = Service.ObjectTable[i];
+            if (obj != null)
+            {
+                if (obj is PlayerCharacter playerCharacter
+                    && playerCharacter.Name.TextValue == fullName
+                    && playerCharacter.HomeWorld.GameData?.Name.RawString == this.WorldName)
+                {
+                    this.JobId = playerCharacter.ClassJob.Id;
+                    return;
+                }
+            }
+        }
+
+        // if not in object table, search in the team list (can give 0 if normal party member in another zone)
+        Service.TeamManager.UpdateTeamList();
+        var member = Service.TeamManager.TeamList.FirstOrDefault(member => member.FirstName == this.FirstName
+                                                              && member.World == this.WorldName);
+        if (member != null)
+        {
+            this.JobId = member.JobId;
+            return;
+        }
+
+        this.JobId = 0; // avoid stale job id if the current one is not retrievable
     }
 
     private void ParseZone(dynamic zone)
@@ -359,9 +416,9 @@ public class CharData
                 encounter.Fastest = ranking.fastestKill;
                 encounter.BestAmount = ranking.bestAmount;
                 var jobName = Regex.Replace(ranking.spec.ToString(), "([a-z])([A-Z])", "$1 $2");
-                encounter.Job = Service.GameDataManager.Jobs.FirstOrDefault(job => job.Name == jobName);
+                encounter.Job = GameDataManager.Jobs.FirstOrDefault(job => job.Name == jobName);
                 var bestJobName = Regex.Replace(ranking.bestSpec.ToString(), "([a-z])([A-Z])", "$1 $2");
-                encounter.BestJob = Service.GameDataManager.Jobs.FirstOrDefault(job => job.Name == bestJobName);
+                encounter.BestJob = GameDataManager.Jobs.FirstOrDefault(job => job.Name == bestJobName);
                 var allStars = ranking.allStars;
                 if (allStars != null)
                 {

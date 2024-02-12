@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using Dalamud.Logging;
 using Newtonsoft.Json;
 
 namespace FFLogsViewer.Model.GameData;
@@ -52,7 +51,7 @@ public class GameData
 
         if (isDataValid == false)
         {
-            PluginLog.Error("Data invalid: " + this.ToJson());
+            Service.PluginLog.Error("Data invalid: " + this.ToJson());
         }
 
         return isDataValid;

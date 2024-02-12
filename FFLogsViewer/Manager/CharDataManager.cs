@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Dalamud.Logging;
 using FFLogsViewer.Model;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
@@ -99,7 +98,7 @@ public class CharDataManager
         }
         catch (Exception ex)
         {
-            PluginLog.Error(ex, "Error while resolving placeholder.");
+            Service.PluginLog.Error(ex, "Error while resolving placeholder.");
             return null;
         }
 

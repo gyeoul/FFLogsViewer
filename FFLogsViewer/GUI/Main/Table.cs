@@ -4,7 +4,9 @@ using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
+using Dalamud.Interface.Utility;
 using Dalamud.Utility;
+using FFLogsViewer.Manager;
 using FFLogsViewer.Model;
 using ImGuiNET;
 
@@ -310,7 +312,7 @@ public class Table
 
                 ImGui.TableNextColumn();
 
-                var iconSize = 25 * ImGuiHelpers.GlobalScale;
+                var iconSize = (float)Math.Round(25 * ImGuiHelpers.GlobalScale); // round because of shaking issues
                 Util.CenterCursor(iconSize);
                 var icon = Service.GameDataManager.JobIconsManager.GetJobIcon(charData?.JobId ?? 0);
                 if (icon != null)
@@ -324,10 +326,19 @@ public class Table
 
                 if (charData != null)
                 {
+                    var jobColor = Service.MainWindow.Job.Color;
+                    if (Service.MainWindow.Job.Name != "All jobs")
+                    {
+                        jobColor = GameDataManager.Jobs.FirstOrDefault(job => job.Id == charData.LoadedJobId)?.Color ?? jobColor;
+                    }
+
+                    ImGui.PushStyleColor(ImGuiCol.Text, jobColor);
                     if (Util.CenterSelectableWithError(charData.Abbreviation + $"##Selectable{i}", charData))
                     {
                         Util.OpenLink(charData);
                     }
+
+                    ImGui.PopStyleColor();
 
                     if (charData.CharError == null)
                     {
@@ -549,7 +560,7 @@ public class Table
                 }
 
                 ImGui.TableNextColumn();
-                var iconSize = 25 * ImGuiHelpers.GlobalScale;
+                var iconSize = (float)Math.Round(25 * ImGuiHelpers.GlobalScale); // round because of shaking issues
                 var middleCursorPosY = ImGui.GetCursorPosY() + (iconSize / 2) - (ImGui.GetFontSize() / 2);
                 var icon = Service.GameDataManager.JobIconsManager.GetJobIcon(charData?.JobId ?? 0);
                 if (icon != null)
@@ -566,10 +577,19 @@ public class Table
                 ImGui.SetCursorPosY(middleCursorPosY);
                 if (charData != null)
                 {
+                    var jobColor = Service.MainWindow.Job.Color;
+                    if (Service.MainWindow.Job.Name != "All jobs")
+                    {
+                        jobColor = GameDataManager.Jobs.FirstOrDefault(job => job.Id == charData.LoadedJobId)?.Color ?? jobColor;
+                    }
+
+                    ImGui.PushStyleColor(ImGuiCol.Text, jobColor);
                     if (Util.SelectableWithError($"{charData.FirstName}##Selectable{i}", charData))
                     {
                         Util.OpenLink(charData);
                     }
+
+                    ImGui.PopStyleColor();
 
                     if (charData.CharError == null)
                     {
