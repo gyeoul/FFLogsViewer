@@ -29,7 +29,8 @@ public class HeaderBar
         if (!Service.Configuration.Style.IsSizeFixed
             && (Service.Configuration.Style.MainWindowFlags & ImGuiWindowFlags.AlwaysAutoResize) == 0)
         {
-            ImGui.SetWindowSize(new Vector2(Service.Configuration.Style.MinMainWindowWidth > minWindowSize ? Service.Configuration.Style.MinMainWindowWidth : minWindowSize, -1));
+            ImGui.SetWindowSize(new Vector2(Service.Configuration.Style.MinMainWindowWidth > minWindowSize ? Service.Configuration.Style.MinMainWindowWidth : minWindowSize,
+                                            -1));
         }
 
         // I hate ImGui
@@ -43,14 +44,17 @@ public class HeaderBar
         var calcInputSize = (contentRegionAvailWidth - (ImGui.GetStyle().ItemSpacing.X * 2) - buttonsWidth) / 3;
 
         ImGui.SetNextItemWidth(calcInputSize);
-        if (ImGui.InputTextWithHint("##FirstName", Service.Localization.GetString("Main_Name"), ref Service.CharDataManager.DisplayedChar.FirstName, 18, ImGuiInputTextFlags.CharsNoBlank))
+        if (ImGui.InputTextWithHint("##FirstName", Service.Localization.GetString("Main_Name"), ref Service.CharDataManager.DisplayedChar.FirstName, 18,
+                                    ImGuiInputTextFlags.CharsNoBlank))
         {
-            Service.CharDataManager.DisplayedChar.FirstName = Service.CharDataManager.DisplayedChar.FirstName[..Math.Min(Service.CharDataManager.DisplayedChar.FirstName.Length, 6)];
+            Service.CharDataManager.DisplayedChar.FirstName =
+                Service.CharDataManager.DisplayedChar.FirstName[..Math.Min(Service.CharDataManager.DisplayedChar.FirstName.Length, 6)];
         }
 
         ImGui.SameLine();
         ImGui.SetNextItemWidth(calcInputSize);
-        ImGui.InputTextWithHint("##WorldName", Service.Localization.GetString("Main_World"), ref Service.CharDataManager.DisplayedChar.WorldName, 18, ImGuiInputTextFlags.CharsNoBlank);
+        ImGui.InputTextWithHint("##WorldName", Service.Localization.GetString("Main_World"), ref Service.CharDataManager.DisplayedChar.WorldName, 18,
+                                ImGuiInputTextFlags.CharsNoBlank);
 
         ImGui.SameLine();
         if (Util.DrawButtonIcon(FontAwesomeIcon.Search))
@@ -116,13 +120,11 @@ public class HeaderBar
             {
                 if (Service.CharDataManager.DisplayedChar.IsDataReady)
                 {
-                    if (Util.CenterSelectable(
-                            Service.Localization.GetString("Main_ViewingLogs").Replace("{Name}", Service.CharDataManager.DisplayedChar.LoadedFirstName).Replace("{World}", Service.CharDataManager.DisplayedChar.LoadedWorldName)))
-                    {
-                        Util.OpenLink(Service.CharDataManager.DisplayedChar);
-                    }
+                    Util.CenterSelectable(Service.Localization.GetString("Main_ViewingLogs").Replace("{Name}", Service.CharDataManager.DisplayedChar.LoadedFirstName)
+                                                 .Replace("{World}", Service.CharDataManager.DisplayedChar.LoadedWorldName));
+                    Util.LinkOpenOrPopup(Service.CharDataManager.DisplayedChar);
 
-                    Util.SetHoverTooltip(Service.Localization.GetString("Main_OpenOnFFLogs"));
+                    Util.SetHoverTooltip($"Click to open on {(Service.Configuration.ShowTomestoneOption ? "..." : "FF Logs")}");
                 }
                 else
                 {
@@ -134,10 +136,8 @@ public class HeaderBar
         {
             if (Util.ShouldErrorBeClickable(Service.CharDataManager.DisplayedChar))
             {
-                if (Util.CenterSelectableError(Service.CharDataManager.DisplayedChar, "Click to open on FF Logs"))
-                {
-                    Util.OpenLink(Service.CharDataManager.DisplayedChar);
-                }
+                Util.CenterSelectableError(Service.CharDataManager.DisplayedChar, $"Click to open on {(Service.Configuration.ShowTomestoneOption ? "..." : "FF Logs")}");
+                Util.LinkOpenOrPopup(Service.CharDataManager.DisplayedChar);
             }
             else
             {
@@ -171,12 +171,12 @@ public class HeaderBar
     private static float GetMinInputWidth()
     {
         return new[]
-        {
-            ImGui.CalcTextSize(Service.Localization.GetString("Main_Name")).X,
-            ImGui.CalcTextSize(Service.Localization.GetString("Main_World")).X,
-            ImGui.CalcTextSize(Service.CharDataManager.DisplayedChar.FirstName).X,
-            ImGui.CalcTextSize(Service.CharDataManager.DisplayedChar.WorldName).X,
-        }.Max() + (ImGui.GetStyle().FramePadding.X * 2);
+               {
+                   ImGui.CalcTextSize(Service.Localization.GetString("Main_Name")).X,
+                   ImGui.CalcTextSize(Service.Localization.GetString("Main_World")).X,
+                   ImGui.CalcTextSize(Service.CharDataManager.DisplayedChar.FirstName).X,
+                   ImGui.CalcTextSize(Service.CharDataManager.DisplayedChar.WorldName).X,
+               }.Max() + (ImGui.GetStyle().FramePadding.X * 2);
     }
 
     private static float GetMinWindowSize()

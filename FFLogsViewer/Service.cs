@@ -1,4 +1,3 @@
-using Dalamud.ContextMenu;
 using Dalamud.Game;
 using Dalamud.Game.ClientState.Objects;
 using Dalamud.IoC;
@@ -25,7 +24,6 @@ internal class Service
     internal static LocalizationManager Localization { get; set; } = null!;
     internal static TeamManager TeamManager { get; set; } = null!;
     internal static FFLogsClient FFLogsClient { get; set; } = null!;
-    internal static DalamudContextMenu ContextMenu { get; set; } = null!;
 
     [PluginService] internal static DalamudPluginInterface Interface { get; private set; } = null!;
     [PluginService] internal static IChatGui ChatGui { get; private set; } = null!;
@@ -42,4 +40,7 @@ internal class Service
     [PluginService] internal static IGameInteropProvider GameInteropProvider { get; private set; } = null!;
     [PluginService] internal static ITextureProvider TextureProvider { get; private set; } = null!;
     [PluginService] internal static IObjectTable ObjectTable { get; private set; } = null!;
+    [PluginService] internal static IFramework Framework { get; private set; } = null!;
+    [PluginService] internal static INotificationManager NotificationManager { get; private set; } = null!;
+    [PluginService] internal static IContextMenu ContextMenu { get; private set; } = null!;
 }

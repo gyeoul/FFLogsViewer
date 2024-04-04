@@ -40,7 +40,7 @@ public class CharData
         }
     }
 
-    public List<Encounter> Encounters = new();
+    public List<Encounter> Encounters = [];
 
     public CharData(string? firstName = null,  string? worldName = null, uint? jobId = null)
     {
@@ -191,7 +191,7 @@ public class CharData
                 return;
             }
 
-            this.Encounters = new List<Encounter>();
+            this.Encounters = [];
 
             var properties = character.Properties();
             foreach (var prop in properties)
@@ -249,11 +249,6 @@ public class CharData
         */
         if (!Regex.IsMatch(rawText, "@[^\x00-\x7F]{1,6}"))
             return false;
-
-        if (Service.ClientState.LocalPlayer?.HomeWorld.GameData?.Name == null)
-        {
-            return false;
-        }
 
         var splitedText = rawText.Split("@");
         var firstName = splitedText[0];
@@ -315,7 +310,7 @@ public class CharData
 
     public void ResetData()
     {
-        this.Encounters = new List<Encounter>();
+        this.Encounters = [];
         this.IsDataReady = false;
         this.LoadedMetric = null;
     }

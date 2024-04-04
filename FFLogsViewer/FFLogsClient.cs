@@ -18,12 +18,13 @@ public class FFLogsClient
 {
     public volatile bool IsTokenValid;
     public int LimitPerHour;
+    public bool HasLimitPerHourFailed => this.rateLimitDataFetchAttempts >= 3;
 
     private readonly HttpClient httpClient;
     private readonly object lastCacheRefreshLock = new();
     private readonly ConcurrentDictionary<string, dynamic?> cache = new();
     private volatile bool isRateLimitDataLoading;
-    private volatile int rateLimitDataFetchAttempts;
+    private volatile int rateLimitDataFetchAttempts = 5;
     private DateTime? lastCacheRefresh;
 
     public class Token
@@ -56,13 +57,13 @@ public class FFLogsClient
 
     public static int EstimateCurrentLayoutPoints()
     {
-        var zoneCount = GetZoneInfo().Count;
+        var zoneCount = GetZoneInfo().Count();
         if (zoneCount == 0)
         {
             return 1;
         }
 
-        return GetZoneInfo().Count * 5;
+        return zoneCount * 5;
     }
 
     public void ClearCache()
@@ -170,20 +171,21 @@ public class FFLogsClient
         }
     }
 
-    public void RefreshRateLimitData()
+    public void RefreshRateLimitData(bool resetFetchAttempts = false)
     {
-        if (this.isRateLimitDataLoading || (this.LimitPerHour <= 0 && this.rateLimitDataFetchAttempts >= 3))
+        if (resetFetchAttempts)
+        {
+            this.rateLimitDataFetchAttempts = 0;
+        }
+
+        if (this.isRateLimitDataLoading || (this.LimitPerHour <= 0 && this.HasLimitPerHourFailed))
         {
             return;
         }
 
         this.isRateLimitDataLoading = true;
 
-        // don't count as an attempt if the previous refresh was successful
-        if (this.LimitPerHour <= 0)
-        {
-            Interlocked.Increment(ref this.rateLimitDataFetchAttempts);
-        }
+        Interlocked.Increment(ref this.rateLimitDataFetchAttempts);
 
         this.LimitPerHour = 0;
 
@@ -201,6 +203,7 @@ public class FFLogsClient
                 else
                 {
                     this.LimitPerHour = limitPerHour.Value;
+                    this.rateLimitDataFetchAttempts = 0;
                 }
             }
             else
@@ -230,9 +233,18 @@ public class FFLogsClient
 
         var metric = Service.MainWindow.GetCurrentMetric();
         charData.LoadedMetric = metric;
-        foreach (var (id, difficulty) in GetZoneInfo())
+        foreach (var (id, difficulty, isForcingAdps) in GetZoneInfo())
         {
-            query.Append($"Zone{id}diff{difficulty}: zoneRankings(zoneID: {id}, difficulty: {difficulty}, metric: {metric.InternalName}");
+            query.Append($"Zone{id}diff{difficulty}: zoneRankings(zoneID: {id}, difficulty: {difficulty}, metric: ");
+            if (isForcingAdps && (Service.MainWindow.OverriddenMetric == null
+                                  || Service.MainWindow.OverriddenMetric.InternalName == Service.Configuration.Metric.InternalName))
+            {
+                query.Append("dps");
+            }
+            else
+            {
+                query.Append($"{metric.InternalName}");
+            }
 
             // do not add if standard, avoid issues with alliance raids that do not support any partition
             if (Service.MainWindow.Partition.Id != -1)
@@ -272,8 +284,8 @@ public class FFLogsClient
         var form = new Dictionary<string, string>
         {
             { "grant_type", grantType },
-            { "client_id", Service.Configuration.ClientId ?? string.Empty },
-            { "client_secret", Service.Configuration.ClientSecret ?? string.Empty },
+            { "client_id", Service.Configuration.ClientId },
+            { "client_secret", Service.Configuration.ClientSecret },
         };
 
         try
@@ -290,31 +302,12 @@ public class FFLogsClient
         return null;
     }
 
-    private static List<Tuple<int, int>> GetZoneInfo()
+    private static IEnumerable<(int ZoneId, int DifficultyId, bool IsForcingADPS)> GetZoneInfo()
     {
-        var info = new List<Tuple<int, int>>();
-        foreach (var entry in Service.Configuration.Layout)
-        {
-            if (entry.Type == LayoutEntryType.Encounter)
-            {
-                var isInInfo = false;
-                foreach (var (id, difficulty) in info)
-                {
-                    if (id != entry.ZoneId || difficulty != entry.DifficultyId)
-                        continue;
-
-                    isInInfo = true;
-                    break;
-                }
-
-                if (!isInInfo)
-                {
-                    info.Add(new Tuple<int, int>(entry.ZoneId, entry.DifficultyId));
-                }
-            }
-        }
-
-        return info;
+        return Service.Configuration.Layout
+                .Where(entry => entry.Type == LayoutEntryType.Encounter)
+                .GroupBy(entry => new { entry.ZoneId, entry.DifficultyId })
+                .Select(group => (group.Key.ZoneId, group.Key.DifficultyId, IsForcingADPS: group.Any(entry => entry.IsForcingADPS)));
     }
 
     private void CheckCache()
