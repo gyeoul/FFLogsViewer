@@ -19,7 +19,7 @@ public class Configuration : IPluginConfiguration
     public bool ContextMenuPartyView { get; set; } = true;
     public bool ContextMenuAlwaysPartyView { get; set; }
     public bool OpenInBrowser { get; set; }
-    public bool ShowTomestoneOption { get; set; } = true;
+    public bool ShowTomestoneOption { get; set; } = false;
     public string ContextMenuButtonName { get; set; } = "Search FF Logs";
     public bool IsDefaultViewParty { get; set; }
     public bool HideInCombat { get; set; }
