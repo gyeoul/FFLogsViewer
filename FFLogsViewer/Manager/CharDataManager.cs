@@ -58,7 +58,7 @@ public class CharDataManager
 
     public CharDataManager()
     {
-        var worlds = Service.DataManager.GetExcelSheet<World>()?.Where(world => world.IsPublic && world.DataCenter?.Value?.Region != 0);
+        var worlds = Service.DataManager.GetExcelSheet<World>()?.Where(Util.IsWorldValid);
         if (worlds == null)
         {
             throw new InvalidOperationException("Sheets weren't ready.");
@@ -67,7 +67,7 @@ public class CharDataManager
         this.ValidWorlds = worlds.Select(world => world.Name.RawString).ToArray();
     }
 
-    public static string? GetRegionName(string worldName)
+    public static string GetRegionCode(string worldName)
     {
         /*var world = Service.DataManager.GetExcelSheet<World>()?.FirstOrDefault(x => x.Name.ToString().Equals(worldName, StringComparison.InvariantCultureIgnoreCase));
         if (world is not { IsPublic: true })
@@ -82,16 +82,14 @@ public class CharDataManager
     {
         try
         {
-            var placeholder = Framework.Instance()->GetUiModule()->GetPronounModule()->ResolvePlaceholder(text, 0, 0);
+            var placeholder = Framework.Instance()->GetUIModule()->GetPronounModule()->ResolvePlaceholder(text, 0, 0);
             if (placeholder != null && placeholder->IsCharacter())
             {
                 var character = (Character*)placeholder;
-                var world = Service.DataManager.GetExcelSheet<World>()
-                                   ?.FirstOrDefault(x => x.RowId == character->HomeWorld);
-
-                if (world is { IsPublic: true } && placeholder->Name != null)
+                var world = Util.GetWorld(character->HomeWorld);
+                if (Util.IsWorldValid(world) && placeholder->Name != null)
                 {
-                    var name = $"{Util.ReadSeString(placeholder->Name)}@{world.Name}";
+                    var name = $"{placeholder->NameString}@{world.Name}";
                     return name;
                 }
             }

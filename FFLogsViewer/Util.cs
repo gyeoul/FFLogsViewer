@@ -1,14 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Numerics;
-using System.Runtime.InteropServices;
-using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using FFLogsViewer.Manager;
 using FFLogsViewer.Model;
 using ImGuiNET;
+using Lumina.Excel.GeneratedSheets;
+using Action = System.Action;
 
 namespace FFLogsViewer;
 
@@ -86,7 +87,7 @@ public class Util
 
     public static void CenterCursor(float width)
     {
-        var offset = (ImGui.GetContentRegionAvail().X - width) / 2;
+        var offset = Round((ImGui.GetContentRegionAvail().X - width) / 2);
         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offset);
     }
 
@@ -194,7 +195,7 @@ public class Util
 
     public static void OpenFFLogsLink(CharData charData)
     {
-        OpenLink($"https://cn.fflogs.com/character/{CharDataManager.GetRegionName(charData.WorldName)}/{charData.WorldName}/{charData.FirstName}");
+        OpenLink($"https://cn.fflogs.com/character/cn/{charData.WorldName}/{charData.FirstName}");
     }
 
     public static void OpenTomestoneLink(CharData charData)
@@ -235,25 +236,6 @@ public class Util
                  "If you only want to open to FF Logs, you can revert to the old behavior in the Misc settings tab");
 
         ImGui.EndPopup();
-    }
-
-    public static unsafe SeString ReadSeString(byte* ptr)
-    {
-        var offset = 0;
-        while (true)
-        {
-            var b = *(ptr + offset);
-            if (b == 0)
-            {
-                break;
-            }
-
-            offset += 1;
-        }
-
-        var bytes = new byte[offset];
-        Marshal.Copy(new nint(ptr), bytes, 0, offset);
-        return SeString.Parse(bytes);
     }
 
     public static void UpdateDelayed(Stopwatch stopwatch, TimeSpan delayTime, Action function)
@@ -333,5 +315,61 @@ public class Util
     public static int MathMod(int a, int b)
     {
         return (Math.Abs(a * b) + a) % b;
+    }
+
+    public static bool IsWorldValid(uint worldId)
+    {
+        return IsWorldValid(GetWorld(worldId));
+    }
+
+    public static bool IsWorldValid(World world)
+    {
+        if (world.Name.RawData.IsEmpty || GetRegionCode(world) == string.Empty)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static World GetWorld(uint worldId)
+    {
+        var worldSheet = Service.DataManager.GetExcelSheet<World>()!;
+        var world = worldSheet.FirstOrDefault(x => x.RowId == worldId);
+        if (world == null)
+        {
+            return worldSheet.First();
+        }
+
+        return world;
+    }
+
+    public static string GetRegionCode(World world)
+    {
+        Service.PluginLog.Info($"{world.DataCenter?.Value?.Region}");
+        return world.DataCenter?.Value?.Region switch
+        {
+            1 => "JP",
+            2 => "NA",
+            3 => "EU",
+            4 => "OC",
+            5 => "CN",
+            _ => string.Empty,
+        };
+    }
+
+    public static uint GetJobIconId(uint jobId)
+    {
+        if (jobId is 0 or > 42)
+        {
+            return 62145; // default icon id
+        }
+
+        return 62100 + jobId;
+    }
+
+    public static float Round(float value)
+    {
+        return (float)Math.Round(value);
     }
 }

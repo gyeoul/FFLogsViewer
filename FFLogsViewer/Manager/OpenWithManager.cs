@@ -1,11 +1,9 @@
 using System;
-using System.Linq;
 using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.Gui.PartyFinder.Types;
 using Dalamud.Hooking;
 using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using Lumina.Excel.GeneratedSheets;
 
 namespace FFLogsViewer.Manager;
 
@@ -87,8 +85,8 @@ public unsafe class OpenWithManager
             return;
         }
 
-        var world = Service.DataManager.GetExcelSheet<World>()?.FirstOrDefault(x => x.RowId == worldId);
-        if (world is not { IsPublic: true })
+        var world = Util.GetWorld(worldId);
+        if (!Util.IsWorldValid(world))
         {
             return;
         }
@@ -123,15 +121,15 @@ public unsafe class OpenWithManager
     {
         try
         {
-            this.charaCardAtkCreationAddress = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 4C 8B 74 24 ?? 48 8B 74 24 ?? 48 8B 5C 24 ?? 48 83 C4 30");
-            this.processInspectPacketAddress = Service.SigScanner.ScanText("48 89 5C 24 ?? 56 41 56 41 57 48 83 EC 20 8B DA");
-            this.socialDetailAtkCreationAddress = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 8B 8B ?? ?? ?? ?? BE");
+            this.charaCardAtkCreationAddress = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 48 8B 74 24 48 48 8B 5C 24 40 48 83 C4 30 5F C3 66 90");
+            this.processInspectPacketAddress = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 0F B6 07 48 81 C3 84 02 00 00");
+            this.socialDetailAtkCreationAddress = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 8B 8B 78 0F 00 00 41 BE 00 00 00 E0");
             this.processPartyFinderDetailPacketAddress = Service.SigScanner.ScanText("E9 ?? ?? ?? ?? CC CC CC CC CC CC 48 89 5C 24 ?? 48 89 74 24 ?? 48 89 7C 24 ?? 55 48 8D AC 24");
             this.atkUnitBaseFinalizeAddress = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 45 33 C9 8D 57 01 41 B8");
 
             try
             {
-                this.isJoiningPartyFinderOffset = *(short*)(Service.SigScanner.ScanModule("48 8B F1 66 C7 81") + 6);
+                this.isJoiningPartyFinderOffset = *(short*)Service.SigScanner.ScanModule("?? ?? ?? ?? ?? ?? 8B D7 48 8D 44 24 ?? 33 C9 89");
             }
             catch (Exception ex)
             {
@@ -186,9 +184,9 @@ public unsafe class OpenWithManager
                 && Service.GameGui.GetAddonByName("BannerEditor", 0) == IntPtr.Zero
                 && Service.GameGui.GetAddonByName("CharaCardDesignSetting", 0) == IntPtr.Zero)
             {
-                // To get offsets: 6.21 process chara card network packet 40 55 53 57 48 8D AC 24 ?? ?? ?? ?? 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 85 ?? ?? ?? ?? 48 83 79 ?? ?? 48 8B DA
-                var fullNamePtr = *(nint*)(*(nint*)(agentCharaCard + 40) + 88);
-                var worldId = *(ushort*)(*(nint*)(agentCharaCard + 40) + 192);
+                // To get offsets: 7.0 process chara card network packet (NOT the hooked one) 40 55 53 57 48 8D AC 24 ?? ?? ?? ?? 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 85 ?? ?? ?? ?? 48 83 79 ?? ?? 48 8B DA
+                var fullNamePtr = *(nint*)(*(nint*)(agentCharaCard + 40) + 96);
+                var worldId = *(ushort*)(*(nint*)(agentCharaCard + 40) + 200);
 
                 this.Open(fullNamePtr, worldId);
             }
@@ -207,7 +205,7 @@ public unsafe class OpenWithManager
         {
             if (Service.Configuration.OpenWith.IsExamineEnabled)
             {
-                // To get offsets: 6.21 process inspect network packet 48 89 5C 24 ?? 56 41 56 41 57 48 83 EC 20 8B DA
+                // To get offsets: 7.0 process inspect network packet E8 ?? ?? ?? ?? 0F B6 07 48 81 C3 84 02 00 00
                 var fullNamePtr = packetData + 640;
                 var worldId = *(ushort*)(packetData + 50);
 
@@ -230,8 +228,8 @@ public unsafe class OpenWithManager
             if (Service.Configuration.OpenWith.IsSearchInfoEnabled && a3 == 0)
             {
                 // To get offsets: look in the function
-                var fullNamePtr = data + 42;
-                var worldId = *(ushort*)(data + 32);
+                var fullNamePtr = data + 50;
+                var worldId = *(ushort*)(data + 40);
 
                 this.Open(fullNamePtr, worldId);
             }
@@ -251,14 +249,14 @@ public unsafe class OpenWithManager
             if (Service.Configuration.OpenWith.IsPartyFinderEnabled)
             {
                 // To get offsets: 6.28, look in this function
-                var hasFailed = *(byte*)(packetData + 84) == 0;
-                var isPrivate = ((SearchAreaFlags)(*(byte*)(packetData + 83))).HasFlag(SearchAreaFlags.Private);
+                var hasFailed = *(byte*)(packetData + 92) == 0;
+                var isPrivate = ((SearchAreaFlags)(*(byte*)(packetData + 91))).HasFlag(SearchAreaFlags.Private);
                 var isJoining = this.isJoiningPartyFinderOffset != 0 && *(byte*)(someAgent + this.isJoiningPartyFinderOffset) != 0;
 
                 if (!hasFailed && !isPrivate && !isJoining)
                 {
-                    var fullName = packetData + 712;
-                    var worldId = *(ushort*)(packetData + 74); // is not used in the function, just search it again if it breaks
+                    var fullName = packetData + 912;
+                    var worldId = *(ushort*)(packetData + 82); // is not used in the function, just search it again if it breaks
 
                     this.Open(fullName, worldId);
                 }
@@ -278,10 +276,10 @@ public unsafe class OpenWithManager
         {
             if (IsEnabled() && Service.Configuration.OpenWith.ShouldCloseMainWindow)
             {
-                if ((Service.Configuration.OpenWith.IsAdventurerPlateEnabled && MemoryHelper.ReadStringNullTerminated((nint)addon->Name) == "CharaCard")
-                    || (Service.Configuration.OpenWith.IsExamineEnabled && MemoryHelper.ReadStringNullTerminated((nint)addon->Name) == "CharacterInspect")
-                    || (Service.Configuration.OpenWith.IsSearchInfoEnabled && MemoryHelper.ReadStringNullTerminated((nint)addon->Name) == "SocialDetailB")
-                    || (Service.Configuration.OpenWith.IsPartyFinderEnabled && MemoryHelper.ReadStringNullTerminated((nint)addon->Name) == "LookingForGroupDetail"))
+                if ((Service.Configuration.OpenWith.IsAdventurerPlateEnabled && addon->NameString == "CharaCard")
+                    || (Service.Configuration.OpenWith.IsExamineEnabled && addon->NameString == "CharacterInspect")
+                    || (Service.Configuration.OpenWith.IsSearchInfoEnabled && addon->NameString == "SocialDetailB")
+                    || (Service.Configuration.OpenWith.IsPartyFinderEnabled && addon->NameString == "LookingForGroupDetail"))
                 {
                     // do not close the window if it was just opened, avoid issue of race condition with the addon closing
                     if (DateTime.Now - this.wasOpenedLast > TimeSpan.FromMilliseconds(100))

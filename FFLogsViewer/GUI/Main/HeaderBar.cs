@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
+using Dalamud.Interface.Textures;
 using Dalamud.Interface.Utility;
 using ImGuiNET;
 
@@ -41,7 +42,7 @@ public class HeaderBar
             this.ResetSizeCount--;
         }
 
-        var calcInputSize = (contentRegionAvailWidth - (ImGui.GetStyle().ItemSpacing.X * 2) - buttonsWidth) / 3;
+        var calcInputSize = Util.Round((contentRegionAvailWidth - (ImGui.GetStyle().ItemSpacing.X * 2) - buttonsWidth) / 3);
 
         ImGui.SetNextItemWidth(calcInputSize);
         if (ImGui.InputTextWithHint("##FirstName", Service.Localization.GetString("Main_Name"), ref Service.CharDataManager.DisplayedChar.FirstName, 18,
@@ -165,7 +166,7 @@ public class HeaderBar
             (ImGui.GetStyle().ItemSpacing.X * 4) + // between items
             (ImGui.GetStyle().FramePadding.X * 8); // around buttons, 2 per
         ImGui.PopFont();
-        return buttonsWidth;
+        return Util.Round(buttonsWidth);
     }
 
     private static float GetMinInputWidth()
@@ -181,7 +182,7 @@ public class HeaderBar
 
     private static float GetMinWindowSize()
     {
-        return ((GetMinInputWidth() + (ImGui.GetStyle().ItemSpacing.X * 2)) * 3) + GetButtonsWidth();
+        return Util.Round(((GetMinInputWidth() + (ImGui.GetStyle().ItemSpacing.X * 2)) * 3) + GetButtonsWidth());
     }
 
     private void DrawPartyMembersPopup()
@@ -208,7 +209,7 @@ public class HeaderBar
                     ImGui.TableNextColumn();
 
                     var partyMember = partyList[i];
-                    var iconSize = (float)Math.Round(25 * ImGuiHelpers.GlobalScale); // round because of shaking issues
+                    var iconSize = Util.Round(25 * ImGuiHelpers.GlobalScale);
                     var middleCursorPosY = ImGui.GetCursorPosY() + (iconSize / 2) - (ImGui.GetFontSize() / 2);
 
                     if (ImGui.Selectable($"##PartyListSel{i}", false, ImGuiSelectableFlags.SpanAllColumns, new Vector2(0, iconSize)))
@@ -216,17 +217,8 @@ public class HeaderBar
                         Service.CharDataManager.DisplayedChar.FetchCharacter($"{partyMember.FirstName}@{partyMember.World}");
                     }
 
-                    var icon = Service.GameDataManager.JobIconsManager.GetJobIcon(partyMember.JobId);
-                    if (icon != null)
-                    {
-                        ImGui.SameLine();
-                        ImGui.Image(icon.ImGuiHandle, new Vector2(iconSize));
-                    }
-                    else
-                    {
-                        ImGui.SetCursorPosY(middleCursorPosY);
-                        ImGui.Text("(?)");
-                    }
+                    ImGui.SameLine();
+                    ImGui.Image(Service.TextureProvider.GetFromGameIcon(new GameIconLookup(Util.GetJobIconId(partyMember.JobId))).GetWrapOrEmpty().ImGuiHandle, new Vector2(iconSize));
 
                     ImGui.TableNextColumn();
 

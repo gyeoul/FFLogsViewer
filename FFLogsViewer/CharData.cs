@@ -8,7 +8,6 @@ using Dalamud.Game.ClientState.Objects.SubKinds;
 using FFLogsViewer.Manager;
 using FFLogsViewer.Model;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
 using Newtonsoft.Json.Linq;
 
 namespace FFLogsViewer;
@@ -66,7 +65,7 @@ public class CharData
         this.WorldName = worldName;
     }
 
-    public bool SetInfo(PlayerCharacter playerCharacter)
+    public bool SetInfo(IPlayerCharacter playerCharacter)
     {
         if (playerCharacter.HomeWorld.GameData?.Name == null)
         {
@@ -88,7 +87,7 @@ public class CharData
     public void FetchTargetChar()
     {
         var target = Service.TargetManager.Target;
-        if (target is PlayerCharacter targetCharacter && target.ObjectKind != ObjectKind.Companion)
+        if (target is IPlayerCharacter targetCharacter && target.ObjectKind != ObjectKind.Companion)
         {
             if (this.SetInfo(targetCharacter))
             {
@@ -116,8 +115,8 @@ public class CharData
             return;
         }
 
-        var regionName = CharDataManager.GetRegionName(this.WorldName);
-        if (regionName == null)
+        var regionName = CharDataManager.GetRegionCode(this.WorldName);
+        if (regionName == string.Empty)
         {
             this.CharError = CharacterError.InvalidWorld;
             return;
@@ -296,8 +295,8 @@ public class CharData
 
     public void FetchCharacter(string fullName, ushort worldId)
     {
-        var world = Service.DataManager.GetExcelSheet<World>()?.FirstOrDefault(x => x.RowId == worldId);
-        if (world is not { IsPublic: true })
+        var world = Util.GetWorld(worldId);
+        if (!Util.IsWorldValid(worldId))
         {
             Service.PluginLog.Error($"{worldId}");
             this.CharError = CharacterError.InvalidWorld;
@@ -327,15 +326,12 @@ public class CharData
         for (var i = 0; i < 200; i += 2)
         {
             var obj = Service.ObjectTable[i];
-            if (obj != null)
+            if (obj is IPlayerCharacter playerCharacter
+                && playerCharacter.Name.TextValue == fullName
+                && playerCharacter.HomeWorld.GameData?.Name.RawString == this.WorldName)
             {
-                if (obj is PlayerCharacter playerCharacter
-                    && playerCharacter.Name.TextValue == fullName
-                    && playerCharacter.HomeWorld.GameData?.Name.RawString == this.WorldName)
-                {
-                    this.JobId = playerCharacter.ClassJob.Id;
-                    return;
-                }
+                this.JobId = playerCharacter.ClassJob.Id;
+                return;
             }
         }
 

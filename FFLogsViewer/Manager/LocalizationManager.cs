@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Dalamud;
+using Dalamud.Game;
 using FFLogsViewer.Properties;
 using Newtonsoft.Json;
 

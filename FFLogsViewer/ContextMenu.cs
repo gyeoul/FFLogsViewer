@@ -1,10 +1,8 @@
-using System.Linq;
 using Dalamud.Game.Gui.ContextMenu;
 using Dalamud.Memory;
 using FFLogsViewer.Manager;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using Lumina.Excel.GeneratedSheets;
 
 namespace FFLogsViewer;
 
@@ -20,13 +18,14 @@ public class ContextMenu
         Service.ContextMenu.OnMenuOpened -= OnOpenContextMenu;
     }
 
-    private static bool IsMenuValid(MenuArgs menuOpenedArgs)
+    private static bool IsMenuValid(IMenuArgs menuOpenedArgs)
     {
         if (menuOpenedArgs.Target is not MenuTargetDefault menuTargetDefault)
         {
             return false;
         }
 
+        // ReSharper disable once ConvertSwitchStatementToSwitchExpression
         switch (menuOpenedArgs.AddonName)
         {
             case null: // Nameplate/Model menu
@@ -42,17 +41,19 @@ public class ContextMenu
             case "CrossWorldLinkshell":
             case "ContentMemberList": // Eureka/Bozja/...
             case "BeginnerChatList":
-                return menuTargetDefault.TargetName != string.Empty
-                       && (Service.DataManager.GetExcelSheet<World>()?.FirstOrDefault(x => x.RowId == menuTargetDefault.TargetHomeWorld.Id)?.IsPublic ?? false);
+            {
+                return menuTargetDefault.TargetName != string.Empty && Util.IsWorldValid(menuTargetDefault.TargetHomeWorld.Id);
+            }
 
             case "BlackList":
+            case "MuteList":
                 return menuTargetDefault.TargetName != string.Empty;
         }
 
         return false;
     }
 
-    private static void SearchPlayerFromMenu(MenuArgs menuArgs)
+    private static void SearchPlayerFromMenu(IMenuArgs menuArgs)
     {
         if (menuArgs.Target is not MenuTargetDefault menuTargetDefault)
         {
@@ -64,10 +65,14 @@ public class ContextMenu
         {
             playerName = GetBlacklistSelectFullName();
         }
+        else if (menuArgs.AddonName == "MuteList")
+        {
+            playerName = GetMuteListSelectFullName();
+        }
         else
         {
-            var world = Service.DataManager.GetExcelSheet<World>()?.FirstOrDefault(x => x.RowId == menuTargetDefault.TargetHomeWorld.Id);
-            if (world is not { IsPublic: true })
+            var world = Util.GetWorld(menuTargetDefault.TargetHomeWorld.Id);
+            if (!Util.IsWorldValid(world))
             {
                 return;
             }
@@ -96,7 +101,7 @@ public class ContextMenu
         }
     }
 
-    private static void OnOpenContextMenu(MenuOpenedArgs menuOpenedArgs)
+    private static void OnOpenContextMenu(IMenuOpenedArgs menuOpenedArgs)
     {
         if (!Service.Interface.UiBuilder.ShouldModifyUi || !IsMenuValid(menuOpenedArgs))
         {
@@ -123,7 +128,7 @@ public class ContextMenu
         }
     }
 
-    private static void Search(MenuItemClickedArgs menuItemClickedArgs)
+    private static void Search(IMenuItemClickedArgs menuItemClickedArgs)
     {
         if (!IsMenuValid(menuItemClickedArgs))
         {
@@ -135,10 +140,21 @@ public class ContextMenu
 
     private static unsafe string GetBlacklistSelectFullName()
     {
-        var agentBlackList = (AgentBlacklist*)Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(AgentId.SocialBlacklist);
+        var agentBlackList = (AgentBlacklist*)Framework.Instance()->GetUIModule()->GetAgentModule()->GetAgentByInternalId(AgentId.Blacklist);
         if (agentBlackList != null)
         {
             return MemoryHelper.ReadSeString(&agentBlackList->SelectedPlayerFullName).TextValue;
+        }
+
+        return string.Empty;
+    }
+
+    private static unsafe string GetMuteListSelectFullName()
+    {
+        var agentMuteList = Framework.Instance()->GetUIModule()->GetAgentModule()->GetAgentByInternalId(AgentId.Mutelist);
+        if (agentMuteList != null)
+        {
+            return MemoryHelper.ReadSeStringNullTerminated(*(nint*)((nint)agentMuteList + 0x68)).TextValue; // should create the agent in CS later
         }
 
         return string.Empty;
